@@ -1,0 +1,2400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEGA REAPER 9000 //SECURITY OPERATIONS CENTER</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0e1a;
+            color: #00ff41;
+            font-family: 'Share Tech Mono', monospace;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* CRT Screen Effect */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+        
+        /* Scanline effect */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(0, 255, 65, 0.3);
+            animation: scanline 8s linear infinite;
+            pointer-events: none;
+            z-index: 9998;
+        }
+        
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
+        }
+        
+        .container {
+            max-width: 1900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        header {
+            border: 2px solid #00ff41;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            background: rgba(0, 255, 65, 0.03);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        header::before {
+            content: "▲";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #0a0e1a;
+            padding: 0 10px;
+            color: #00ff41;
+        }
+        
+        h1 {
+            font-size: 1.8em;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px #00ff41;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            background: #00ff41;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 10px #00ff41;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        /* Mode Switcher */
+        .mode-switcher {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .mode-btn {
+            background: transparent;
+            border: 2px solid #00ff41;
+            color: #00ff41;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85em;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .mode-btn:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+        }
+        
+        .mode-btn.active {
+            background: #00ff41;
+            color: #0a0e1a;
+            box-shadow: 0 0 20px #00ff41;
+        }
+        
+        .system-time {
+            font-size: 0.9em;
+            color: #00ccff;
+            text-shadow: 0 0 5px #00ccff;
+            margin-left: 20px;
+        }
+        
+        /* Mode Containers */
+        .mode-container {
+            display: none;
+        }
+        
+        .mode-container.active {
+            display: block;
+        }
+        
+        /* Dashboard Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        /* Panels */
+        .panel {
+            border: 2px solid #00ff41;
+            padding: 15px;
+            background: rgba(0, 20, 40, 0.6);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
+            position: relative;
+        }
+        
+        .panel-header {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #00ff41;
+            color: #00ccff;
+            text-shadow: 0 0 5px #00ccff;
+        }
+        
+        /* Network Visualization */
+        .network-viz {
+            grid-column: span 2;
+            height: 500px;
+            position: relative;
+        }
+        
+        #networkCanvas {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+        }
+        
+        /* Stats Display */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+        }
+        
+        .stat-label {
+            color: #888;
+        }
+        
+        .stat-value {
+            color: #00ff41;
+            font-weight: bold;
+            text-shadow: 0 0 5px #00ff41;
+        }
+        
+        .stat-value.warning {
+            color: #ffaa00;
+            text-shadow: 0 0 5px #ffaa00;
+        }
+        
+        .stat-value.critical {
+            color: #ff0055;
+            text-shadow: 0 0 5px #ff0055;
+        }
+        
+        /* Terminal Output */
+        .terminal {
+            background: #000;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-size: 0.85em;
+            line-height: 1.6;
+            border: 1px solid #00ff41;
+        }
+        
+        .terminal::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .terminal::-webkit-scrollbar-track {
+            background: #0a0e1a;
+        }
+        
+        .terminal::-webkit-scrollbar-thumb {
+            background: #00ff41;
+            box-shadow: 0 0 5px #00ff41;
+        }
+        
+        .terminal-line {
+            margin: 3px 0;
+        }
+        
+        .terminal-prompt {
+            color: #00ccff;
+        }
+        
+        .terminal-output {
+            color: #00ff41;
+        }
+        
+        .terminal-error {
+            color: #ff0055;
+        }
+        
+        /* Full Terminal Mode */
+        .full-terminal {
+            height: calc(100vh - 180px);
+            background: #000;
+            border: 2px solid #00ff41;
+            padding: 20px;
+            overflow-y: auto;
+            font-size: 0.95em;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.2);
+        }
+        
+        .terminal-input-line {
+            display: flex;
+            margin-top: 10px;
+        }
+        
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #00ff41;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.95em;
+            outline: none;
+            margin-left: 10px;
+        }
+        
+        /* Progress Bars */
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ff41;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff41, #00ccff);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px #00ff41;
+        }
+        
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 20px;
+            color: #fff;
+            font-size: 0.8em;
+            text-shadow: 0 0 3px #000;
+        }
+        
+        /* Host List */
+        .host-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .host-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(0, 255, 65, 0.05);
+            border-left: 3px solid #00ff41;
+            transition: all 0.3s;
+        }
+        
+        .host-item:hover {
+            background: rgba(0, 255, 65, 0.15);
+            transform: translateX(5px);
+        }
+        
+        .host-ip {
+            color: #00ccff;
+            font-weight: bold;
+        }
+        
+        .host-status {
+            float: right;
+            font-size: 0.8em;
+        }
+        
+        .status-online {
+            color: #00ff41;
+        }
+        
+        .status-offline {
+            color: #ff0055;
+        }
+        
+        /* Buttons */
+        .btn {
+            background: transparent;
+            border: 2px solid #00ff41;
+            color: #00ff41;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .btn:hover {
+            background: #00ff41;
+            color: #0a0e1a;
+            box-shadow: 0 0 20px #00ff41;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8em;
+        }
+        
+        .btn-danger {
+            border-color: #ff0055;
+            color: #ff0055;
+        }
+        
+        .btn-danger:hover {
+            background: #ff0055;
+            color: #0a0e1a;
+            box-shadow: 0 0 20px #ff0055;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        /* Alert Box */
+        .alert-box {
+            border: 2px solid #ffaa00;
+            padding: 10px;
+            margin: 10px 0;
+            background: rgba(255, 170, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-icon {
+            color: #ffaa00;
+            font-size: 1.5em;
+            text-shadow: 0 0 10px #ffaa00;
+        }
+        
+        /* Metric Cards */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .metric-card {
+            border: 1px solid #00ff41;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 2em;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+            font-weight: bold;
+        }
+        
+        .metric-label {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        /* GUI Tools Mode */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .tool-card {
+            border: 2px solid #00ff41;
+            padding: 20px;
+            background: rgba(0, 20, 40, 0.6);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.3);
+        }
+        
+        .tool-icon {
+            font-size: 3em;
+            text-align: center;
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px #00ff41;
+        }
+        
+        .tool-title {
+            font-size: 1.2em;
+            color: #00ccff;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #00ccff;
+        }
+        
+        .tool-description {
+            font-size: 0.85em;
+            color: #888;
+            text-align: center;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        /* Form Elements */
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        .form-label {
+            display: block;
+            color: #00ccff;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            padding: 8px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9em;
+            outline: none;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: #00ccff;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 10px 0;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #888;
+            font-size: 0.85em;
+        }
+        
+        .checkbox-label input[type="checkbox"] {
+            accent-color: #00ff41;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #0a0e1a;
+            border: 2px solid #00ff41;
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 0 40px rgba(0, 255, 65, 0.4);
+        }
+        
+        .modal-header {
+            font-size: 1.5em;
+            color: #00ccff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #00ccff;
+        }
+        
+        .modal-close {
+            float: right;
+            cursor: pointer;
+            font-size: 1.5em;
+            color: #ff0055;
+        }
+        
+        /* Scan Results */
+        .scan-results {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ff41;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .result-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 3px solid #00ff41;
+            background: rgba(0, 255, 65, 0.05);
+        }
+        
+        .result-item.warning {
+            border-left-color: #ffaa00;
+            background: rgba(255, 170, 0, 0.05);
+        }
+        
+        .result-item.critical {
+            border-left-color: #ff0055;
+            background: rgba(255, 0, 85, 0.05);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .dashboard-grid, .tools-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .network-viz {
+                grid-column: span 2;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .dashboard-grid, .tools-grid {
+                grid-template-columns: 1fr;
+            }
+            .network-viz {
+                grid-column: span 1;
+            }
+            .mode-switcher {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div style="display: flex; align-items: center;">
+                <h1>
+                    <span class="status-indicator"></span>
+                    MEGA REAPER 9000 //SOC
+                </h1>
+                <span class="system-time" id="systemTime">00:00:00 UTC</span>
+            </div>
+            <div class="mode-switcher">
+                <button class="mode-btn active" onclick="switchMode('dashboard')">DASHBOARD</button>
+                <button class="mode-btn" onclick="switchMode('tools')">GUI TOOLS</button>
+                <button class="mode-btn" onclick="switchMode('terminal')">TERMINAL</button>
+            </div>
+        </header>
+
+        <!-- DASHBOARD MODE -->
+        <div id="dashboardMode" class="mode-container active">
+            <div class="dashboard-grid">
+                <!-- Network Visualization -->
+                <div class="panel network-viz">
+                    <div class="panel-header">// NETWORK TOPOLOGY</div>
+                    <canvas id="networkCanvas"></canvas>
+                </div>
+
+                <!-- System Stats -->
+                <div class="panel">
+                    <div class="panel-header">// SYSTEM METRICS</div>
+                    <div class="metric-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" id="hostsOnline">0</div>
+                            <div class="metric-label">HOSTS ONLINE</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="openPorts">0</div>
+                            <div class="metric-label">OPEN PORTS</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="bandwidth">0 MB/s</div>
+                            <div class="metric-label">BANDWIDTH</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="latency">0 ms</div>
+                            <div class="metric-label">AVG LATENCY</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <div class="stat-row">
+                            <span class="stat-label">CPU USAGE</span>
+                            <span class="stat-value" id="cpuUsage">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="cpuBar" style="width: 0%"></div>
+                            <div class="progress-text" id="cpuText">0%</div>
+                        </div>
+                        
+                        <div class="stat-row">
+                            <span class="stat-label">MEMORY</span>
+                            <span class="stat-value" id="memUsage">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="memBar" style="width: 0%"></div>
+                            <div class="progress-text" id="memText">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Connection Map -->
+                <div class="panel" style="grid-column: span 2;">
+                    <div class="panel-header">// CONNECTION MAP</div>
+                    <canvas id="connectionMap" style="width: 100%; height: 300px; background: rgba(0, 0, 0, 0.3);"></canvas>
+                </div>
+
+                <!-- Top Talkers -->
+                <div class="panel">
+                    <div class="panel-header">// TOP TALKERS</div>
+                    <div id="topTalkersList" style="max-height: 300px; overflow-y: auto;"></div>
+                </div>
+
+                <!-- Active Connections -->
+                <div class="panel" style="grid-column: span 2;">
+                    <div class="panel-header">// ACTIVE CONNECTIONS</div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #00ff41;">
+                                    <th style="text-align: left; padding: 8px; color: #00ccff;">PROTOCOL</th>
+                                    <th style="text-align: left; padding: 8px; color: #00ccff;">LOCAL ADDRESS</th>
+                                    <th style="text-align: left; padding: 8px; color: #00ccff;">REMOTE ADDRESS</th>
+                                    <th style="text-align: left; padding: 8px; color: #00ccff;">STATE</th>
+                                    <th style="text-align: left; padding: 8px; color: #00ccff;">BYTES</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activeConnectionsTable">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Attack Operations Widget -->
+                <div class="panel">
+                    <div class="panel-header">// ATTACK OPERATIONS</div>
+                    
+                    <!-- Exploit Status Section -->
+                    <div style="margin-bottom: 15px;">
+                        <div style="color: #00ccff; font-size: 0.9em; margin-bottom: 8px; border-bottom: 1px solid rgba(0, 255, 65, 0.3); padding-bottom: 5px;">
+                            ACTIVE EXPLOITS
+                        </div>
+                        <div id="activeExploits"></div>
+                    </div>
+
+                    <!-- Vulnerability Matches Section -->
+                    <div style="margin-bottom: 15px;">
+                        <div style="color: #00ccff; font-size: 0.9em; margin-bottom: 8px; border-bottom: 1px solid rgba(0, 255, 65, 0.3); padding-bottom: 5px;">
+                            CRITICAL VULNS
+                        </div>
+                        <div id="criticalVulns"></div>
+                    </div>
+
+                    <!-- Killchain Progress Section -->
+                    <div>
+                        <div style="color: #00ccff; font-size: 0.9em; margin-bottom: 8px; border-bottom: 1px solid rgba(0, 255, 65, 0.3); padding-bottom: 5px;">
+                            KILLCHAIN STATUS
+                        </div>
+                        <div id="killchainProgress"></div>
+                    </div>
+                </div>
+
+                <!-- Security Monitoring -->
+                <div class="panel" style="grid-column: span 2;">
+                    <div class="panel-header">// SECURITY ALERTS</div>
+                    <div id="securityAlerts" style="max-height: 250px; overflow-y: auto;"></div>
+                </div>
+
+                <!-- Compromised Assets -->
+                <div class="panel">
+                    <div class="panel-header">// COMPROMISED ASSETS</div>
+                    <div id="compromisedHosts" style="max-height: 300px; overflow-y: auto;"></div>
+                    <div class="btn-group">
+                        <button class="btn btn-small" onclick="refreshCompromised()">REFRESH</button>
+                        <button class="btn btn-small btn-danger" onclick="killAllSessions()">KILL ALL</button>
+                    </div>
+                </div>
+
+                <!-- Terminal Output -->
+                <div class="panel" style="grid-column: span 2;">
+                    <div class="panel-header">// SYSTEM LOG</div>
+                    <div class="terminal" id="dashboardTerminal">
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">root@reaper9000:~#</span>
+                            <span class="terminal-output"> System initialized...</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-output">[OK] Network modules loaded</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-output">[OK] Security tools ready</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerts -->
+                <div class="panel" id="systemStatusPanel">
+                    <div class="panel-header">// SYSTEM STATUS</div>
+                    <div class="alert-box" id="systemAlertBox">
+                        <div class="alert-icon">✓</div>
+                        <div>Awaiting backend connection...</div>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">LAST SCAN</span>
+                        <span class="stat-value" id="statLastScan">Never</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">UPTIME</span>
+                        <span class="stat-value" id="statUptime">0:00:00</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">ATTACK SURFACE</span>
+                        <span class="stat-value" id="statAttackSurface">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GUI TOOLS MODE -->
+        <div id="toolsMode" class="mode-container">
+            <div class="tools-grid">
+                <!-- Nmap Scanner -->
+                <div class="tool-card">
+                    <div class="tool-icon"><i class="fa-solid fa-satellite-dish"></i></div>
+                    <div class="tool-title">NMAP SCANNER</div>
+                    <div class="tool-description">Network discovery and security auditing</div>
+                    <button class="btn" style="width: 100%;" onclick="openTool('nmap')">LAUNCH</button>
+                </div>
+
+                <!-- Port Scanner -->
+                <div class="tool-card">
+                    <div class="tool-icon"><i class="fa-solid fa-network-wired"></i></div>
+                    <div class="tool-title">PORT SCANNER</div>
+                    <div class="tool-description">Fast TCP/UDP port enumeration</div>
+                    <button class="btn" style="width: 100%;" onclick="openTool('portscan')">LAUNCH</button>
+                </div>
+
+                <!-- Vulnerability Scanner -->
+                <div class="tool-card">
+                    <div class="tool-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div class="tool-title">VULN SCANNER</div>
+                    <div class="tool-description">Automated vulnerability assessment</div>
+                    <button class="btn" style="width: 100%;" onclick="openTool('vulnscan')">LAUNCH</button>
+                </div>
+
+                <!-- Network Sniffer -->
+                <div class="tool-card">
+                    <div class="tool-icon"><i class="fa-solid fa-wifi"></i></div>
+                    <div class="tool-title">PACKET CAPTURE</div>
+                    <div class="tool-description">Live network traffic analysis</div>
+                    <button class="btn" style="width: 100%;" onclick="openTool('sniffer')">LAUNCH</button>
+                </div>
+
+                <!-- DNS Enumeration -->
+                <div class="tool-card">
+                    <div class="tool-icon"><i class="fa-solid fa-globe"></i></div>
+                    <div class="tool-title">DNS ENUM</div>
+                    <div class="tool-description">DNS reconnaissance and mapping</div>
+                    <button class="btn" style="width: 100%;" onclick="openTool('dnsenum')">LAUNCH</button>
+                </div>
+
+                <!-- Web Scanner -->
+                <div class="tool-card">
+                    <div class="tool-icon"><i class="fa-solid fa-code"></i></div>
+                    <div class="tool-title">WEB SCANNER</div>
+                    <div class="tool-description">Web application security testing</div>
+                    <button class="btn" style="width: 100%;" onclick="openTool('webscan')">LAUNCH</button>
+                </div>
+
+                <!-- Brute Force -->
+                <div class="tool-card">
+                    <div class="tool-icon"><i class="fa-solid fa-key"></i></div>
+                    <div class="tool-title">BRUTE FORCE</div>
+                    <div class="tool-description">Password and authentication testing</div>
+                    <button class="btn" style="width: 100%;" onclick="openTool('bruteforce')">LAUNCH</button>
+                </div>
+
+                <!-- Exploit Framework -->
+                <div class="tool-card">
+                    <div class="tool-icon"><i class="fa-solid fa-bomb"></i></div>
+                    <div class="tool-title">EXPLOIT DB</div>
+                    <div class="tool-description">Search and deploy exploits</div>
+                    <button class="btn btn-danger" style="width: 100%;" onclick="openTool('exploit')">LAUNCH</button>
+                </div>
+
+                <!-- Report Generator -->
+                <div class="tool-card">
+                    <div class="tool-icon"><i class="fa-solid fa-file-lines"></i></div>
+                    <div class="tool-title">REPORT GEN</div>
+                    <div class="tool-description">Generate assessment reports</div>
+                    <button class="btn" style="width: 100%;" onclick="openTool('report')">LAUNCH</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TERMINAL MODE -->
+        <div id="terminalMode" class="mode-container">
+            <div class="full-terminal" id="fullTerminal">
+                <div class="terminal-line">
+                    <span style="color: #00ccff;">╔═╗ ╔═╗╔═╗╔═╗  ╔═╗╔═╗╔═╗╔═╗╔═╗╔═╗  ╔═╗╔═╗╔═╗╔═╗</span>
+                </div>
+                <div class="terminal-line">
+                    <span style="color: #00ccff;">║║║ ║╣ ║ ╦╠═╣  ╠╦╝║╣ ╠═╣╠═╝║╣ ╠╦╝  ║ ║║ ║║ ║║ ║</span>
+                </div>
+                <div class="terminal-line">
+                    <span style="color: #00ccff;">╩ ╩ ╚═╝╚═╝╩ ╩  ╩╚═╚═╝╩ ╩╩  ╚═╝╩╚═  ╚═╝╚═╝╚═╝╚═╝</span>
+                </div>
+                <div class="terminal-line" style="margin-top: 20px;">
+                    <span class="terminal-output">MEGA REAPER 9000 //Security Operations Center v3.0.0 — LIVE DATA MODE</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="terminal-output">EXTREME OFFENSIVE SECURITY PLATFORM - MAXIMUM POWER MODE</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="terminal-output">Type 'help' for available commands</span>
+                </div>
+                <div class="terminal-line" style="margin-top: 10px;">
+                    <span class="terminal-output">[*] All systems operational</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="terminal-output">[*] Tools loaded: nmap, masscan, nikto, hydra, sqlmap, metasploit</span>
+                </div>
+                <div class="terminal-input-line">
+                    <span class="terminal-prompt">root@reaper9000:~#</span>
+                    <input type="text" class="terminal-input" id="terminalInput" placeholder="Enter command..." autofocus>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Tool Configuration -->
+    <div id="toolModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-close" onclick="closeModal()">&times;</span>
+                <span id="modalTitle">TOOL CONFIGURATION</span>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        // Mode Switching
+        function switchMode(mode) {
+            document.querySelectorAll('.mode-container').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.mode-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(mode + 'Mode').classList.add('active');
+            event.target.classList.add('active');
+            
+            if (mode === 'terminal') {
+                document.getElementById('terminalInput').focus();
+            }
+        }
+
+        // Update system time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('systemTime').textContent = 
+                now.toISOString().split('T')[1].split('.')[0] + ' UTC';
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Network visualization — dynamic nodes from real connections
+        const canvas = document.getElementById('networkCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        let _topoNodes = [];
+        let _topoCenter = null;
+
+        class Node {
+            constructor(x, y, label) {
+                this.x = x;
+                this.y = y;
+                this.label = label;
+                this.connections = [];
+                this.pulse = Math.random() * Math.PI * 2;
+                this.color = '#00ff41';
+            }
+            
+            draw() {
+                this.pulse = (this.pulse + 0.05) % (Math.PI * 2);
+                const size = 8 + Math.sin(this.pulse) * 2;
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                ctx.fillStyle = this.color;
+                ctx.font = '10px Share Tech Mono';
+                ctx.fillText(this.label, this.x - 15, this.y - 15);
+            }
+        }
+
+        function rebuildTopology(connections) {
+            _topoNodes = [];
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            const gateway = new Node(centerX, centerY, 'LOCAL');
+            gateway.color = '#00ff41';
+            _topoNodes.push(gateway);
+            
+            // Extract unique remote IPs with device info
+            const uniqueHosts = {};
+            (connections || []).forEach(c => {
+                if (c.state === 'ESTABLISHED' && c.remote_addr && c.remote_addr !== 'N/A') {
+                    const ip = c.remote_addr.split(':')[0];
+                    if (ip && ip !== '127.0.0.1' && ip !== '0.0.0.0' && !uniqueHosts[ip]) {
+                        uniqueHosts[ip] = c.device || {};
+                    }
+                }
+            });
+            
+            const entries = Object.entries(uniqueHosts).slice(0, 12);
+            const radius = Math.min(canvas.width, canvas.height) * 0.35;
+            
+            // Device type color map
+            const typeColors = {
+                'phone': '#ff0055', 'tablet': '#ff6600', 'laptop': '#00ccff',
+                'desktop': '#00ccff', 'computer': '#00ccff', 'router': '#ffaa00',
+                'server': '#ff00ff', 'media': '#ff6600', 'gaming': '#ff0055',
+                'smart-home': '#ffaa00', 'speaker': '#ff6600', 'iot': '#ffcc00',
+                'camera': '#ff0055', 'network': '#ffaa00'
+            };
+            
+            entries.forEach(([ip, dev], i) => {
+                const angle = (i / Math.max(entries.length, 1)) * Math.PI * 2;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+                
+                // Use friendly name or short IP
+                let label = dev.friendly_name || dev.manufacturer || ip;
+                if (label.length > 18) label = label.substring(0, 15) + '...';
+                
+                const node = new Node(x, y, label);
+                node.color = typeColors[dev.device_type] || '#00ff41';
+                _topoNodes.push(node);
+                gateway.connections.push(node);
+            });
+        }
+
+        // Initial empty topology
+        rebuildTopology([]);
+
+        function drawConnections() {
+            _topoNodes.forEach(node => {
+                node.connections.forEach(target => {
+                    ctx.beginPath();
+                    ctx.moveTo(node.x, node.y);
+                    ctx.lineTo(target.x, target.y);
+                    ctx.strokeStyle = 'rgba(0, 255, 65, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                });
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawConnections();
+            _topoNodes.forEach(node => node.draw());
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Connection Map — visualizes real active connections
+        const mapCanvas = document.getElementById('connectionMap');
+        const mapCtx = mapCanvas.getContext('2d');
+        mapCanvas.width = mapCanvas.offsetWidth;
+        mapCanvas.height = 300;
+
+        let _realConnections = [];
+
+        function drawConnectionMap() {
+            mapCtx.fillStyle = 'rgba(10, 14, 26, 0.3)';
+            mapCtx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
+
+            // Draw border
+            mapCtx.strokeStyle = 'rgba(0, 255, 65, 0.2)';
+            mapCtx.lineWidth = 1;
+            mapCtx.strokeRect(50, 50, mapCanvas.width - 100, mapCanvas.height - 100);
+
+            // Local node (center-left)
+            const localX = 150;
+            const localY = mapCanvas.height / 2;
+
+            // Draw connections from real data
+            const conns = _realConnections.filter(c => c.state === 'ESTABLISHED' && c.remote_addr !== 'N/A').slice(0, 8);
+            
+            conns.forEach((conn, idx) => {
+                const angle = ((idx / Math.max(conns.length, 1)) - 0.5) * Math.PI * 0.8;
+                const remoteX = mapCanvas.width - 200 + Math.cos(angle) * 100;
+                const remoteY = localY + Math.sin(angle) * 120;
+
+                // Draw curved line
+                const gradient = mapCtx.createLinearGradient(localX, localY, remoteX, remoteY);
+                gradient.addColorStop(0, 'rgba(0, 255, 65, 0.8)');
+                gradient.addColorStop(1, 'rgba(0, 204, 255, 0.8)');
+
+                mapCtx.beginPath();
+                mapCtx.strokeStyle = gradient;
+                mapCtx.lineWidth = 2;
+                
+                const midX = (localX + remoteX) / 2;
+                const midY = Math.min(localY, remoteY) - 30;
+                
+                mapCtx.moveTo(localX, localY);
+                mapCtx.quadraticCurveTo(midX, midY, remoteX, remoteY);
+                mapCtx.stroke();
+
+                // Remote node
+                mapCtx.beginPath();
+                mapCtx.arc(remoteX, remoteY, 4, 0, Math.PI * 2);
+                mapCtx.fillStyle = '#00ccff';
+                mapCtx.shadowBlur = 10;
+                mapCtx.shadowColor = '#00ccff';
+                mapCtx.fill();
+                mapCtx.shadowBlur = 0;
+
+                // Label
+                const remoteAddr = conn.remote_addr.split(':')[0] || '';
+                mapCtx.fillStyle = '#00ccff';
+                mapCtx.font = '8px Share Tech Mono';
+                mapCtx.fillText(remoteAddr.substring(0, 18), remoteX - 30, remoteY - 10);
+            });
+
+            // Local node
+            mapCtx.beginPath();
+            mapCtx.arc(localX, localY, 6, 0, Math.PI * 2);
+            mapCtx.fillStyle = '#00ff41';
+            mapCtx.shadowBlur = 15;
+            mapCtx.shadowColor = '#00ff41';
+            mapCtx.fill();
+            mapCtx.shadowBlur = 0;
+            mapCtx.fillStyle = '#00ff41';
+            mapCtx.font = '10px Share Tech Mono';
+            mapCtx.fillText('LOCAL', localX - 15, localY - 15);
+
+            // Legend
+            mapCtx.fillStyle = '#00ccff';
+            mapCtx.font = '10px Share Tech Mono';
+            mapCtx.fillText('ESTABLISHED: ' + conns.length, 60, 70);
+        }
+
+        // Update connection map when we get real data
+        socket_connectionMap_update = function(connections) {
+            _realConnections = connections || [];
+        };
+
+        setInterval(drawConnectionMap, 500);
+        drawConnectionMap();
+
+        // Top Talkers — populated exclusively from backend WebSocket data
+        let _topTalkersData = [];
+        
+        function updateTopTalkers(data) {
+            if (data) _topTalkersData = data;
+            const talkers = _topTalkersData;
+            
+            const talkersList = document.getElementById('topTalkersList');
+            if (!talkers || talkers.length === 0) {
+                talkersList.innerHTML = '<div style="color: #888; padding: 20px; text-align: center; font-size: 0.8em;">No active remote connections detected</div>';
+                return;
+            }
+            
+            const maxBytes = talkers[0].bytes || 1;
+            talkersList.innerHTML = talkers.map((talker, idx) => {
+                const bytesFormatted = formatBytes(talker.bytes || 0);
+                const barWidth = ((talker.bytes || 0) / maxBytes) * 100;
+                const dev = talker.device || {};
+                const devIcon = dev.icon ? `<i class="fa-solid ${dev.icon}" style="margin-right: 5px; color: #00ccff;"></i>` : '';
+                const devLabel = dev.friendly_name || dev.manufacturer || '';
+                const macBadge = dev.mac ? `<span style="color: #555; font-size: 0.7em; margin-left: 6px;">${dev.mac.substring(0,8)}</span>` : '';
+                
+                return `
+                    <div class="host-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="color: #00ccff; font-weight: bold;">#${idx + 1}</span>
+                                ${devIcon}<span class="host-ip">${talker.ip}</span>
+                                ${devLabel ? `<span style="color: #00ccff; font-size: 0.8em; margin-left: 8px; border: 1px solid rgba(0,204,255,0.3); padding: 1px 6px; border-radius: 2px;">${devLabel}</span>` : ''}
+                                ${macBadge}
+                            </div>
+                            <span style="color: #00ff41; font-size: 0.85em;">${bytesFormatted}</span>
+                        </div>
+                        <div style="font-size: 0.75em; color: #888; margin-top: 2px;">${talker.hostname || talker.ip}${dev.device_type ? ' — ' + dev.device_type : ''}</div>
+                        <div style="margin-top: 5px;">
+                            <div class="progress-bar" style="height: 8px; margin: 5px 0;">
+                                <div class="progress-fill" style="width: ${barWidth}%;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75em; color: #888;">
+                                <span>${(talker.packets || 0).toLocaleString()} packets</span>
+                                <span>${talker.protocol || 'TCP'}${dev.device_type ? ' | ' + dev.device_type : ''}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        updateTopTalkers();
+
+        // Active Connections Table — populated exclusively from WebSocket
+        // The socket.on('connections_update') handler renders real connections
+
+        // Security Alerts Feed — populated from backend WebSocket
+        function updateSecurityAlerts(alerts) {
+            const iconMap = {
+                'Auth Failure': 'fa-lock',
+                'High CPU': 'fa-microchip',
+                'Elevated CPU': 'fa-microchip',
+                'Memory Pressure': 'fa-memory',
+                'Disk Full': 'fa-hard-drive',
+                'Service Detected': 'fa-circle-info',
+                'Suspicious Connection': 'fa-skull-crossbones',
+                'All Clear': 'fa-circle-check',
+                'Port Scan': 'fa-triangle-exclamation',
+                'Malware': 'fa-virus'
+            };
+            
+            if (!alerts || alerts.length === 0) {
+                document.getElementById('securityAlerts').innerHTML = '<div style="color: #888; padding: 20px; text-align: center; font-size: 0.8em;">No security events — awaiting backend connection</div>';
+                return;
+            }
+
+            const alertsDiv = document.getElementById('securityAlerts');
+            alertsDiv.innerHTML = alerts.map(alert => {
+                const severityClass = alert.severity === 'critical' ? 'critical' : 
+                                      alert.severity === 'warning' ? 'warning' : '';
+                const iconColor = alert.severity === 'critical' ? '#ff0055' : 
+                                 alert.severity === 'warning' ? '#ffaa00' : '#00ccff';
+                const icon = iconMap[alert.type] || 'fa-circle-info';
+                
+                return `
+                    <div class="result-item ${severityClass}" style="margin: 5px 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <i class="fa-solid ${icon}" style="color: ${iconColor}; font-size: 1.2em; margin-right: 8px;"></i>
+                                <strong style="color: #00ccff;">${alert.type}</strong>
+                                <span style="color: #888; font-size: 0.8em; margin-left: 10px;">[${alert.source}]</span>
+                                <div style="margin-top: 5px; color: #888; font-size: 0.85em;">${alert.message}</div>
+                            </div>
+                            <span style="color: #00ccff; font-size: 0.8em; white-space: nowrap; margin-left: 10px;">${alert.time}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        updateSecurityAlerts();
+
+        // Attack Operations - Active Exploits — from backend session state
+        function updateActiveExploits(sessions) {
+            const exploitsDiv = document.getElementById('activeExploits');
+            if (!sessions || sessions.length === 0) {
+                exploitsDiv.innerHTML = '<div style="color: #888; font-size: 0.8em; padding: 5px;">No active exploits — launch from GUI tools or terminal</div>';
+            } else {
+                exploitsDiv.innerHTML = sessions.map(exp => {
+                    const statusColor = exp.status === 'SUCCESS' ? '#00ff41' : 
+                                       exp.status === 'launched' || exp.status === 'running' ? '#ffaa00' : '#ff0055';
+                    const statusIcon = exp.status === 'SUCCESS' ? 'fa-circle-check' : 
+                                      exp.status === 'launched' || exp.status === 'running' ? 'fa-spinner fa-spin' : 'fa-circle-xmark';
+                    return `
+                        <div style="background: rgba(0, 255, 65, 0.05); border-left: 3px solid ${statusColor}; padding: 8px; margin: 5px 0; font-size: 0.8em;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: #00ccff; font-weight: bold;">${exp.id}</span>
+                                <span style="color: ${statusColor};">
+                                    <i class="fa-solid ${statusIcon}"></i> ${exp.status.toUpperCase()}
+                                </span>
+                            </div>
+                            <div style="color: #888; margin-top: 3px;"><i class="fa-solid fa-bullseye"></i> ${exp.target}</div>
+                            <div style="color: #888; font-size: 0.9em; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${exp.exploit || 'N/A'}</div>
+                            <div style="color: #555; font-size: 0.8em; margin-top: 2px;">${exp.last_seen || ''}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Attack Operations - Critical Vulnerabilities — starts empty, populated by real scans
+        function updateCriticalVulns(vulns) {
+            const vulnsDiv = document.getElementById('criticalVulns');
+            if (!vulns || vulns.length === 0) {
+                vulnsDiv.innerHTML = '<div style="color: #888; font-size: 0.8em; padding: 5px;">No vulnerabilities detected — run a vuln scan to populate</div>';
+                return;
+            }
+            vulnsDiv.innerHTML = vulns.map(vuln => {
+                const cvssColor = (vuln.cvss || 0) >= 9 ? '#ff0055' : (vuln.cvss || 0) >= 7 ? '#ffaa00' : '#ffcc00';
+                return `
+                    <div style="background: rgba(0, 0, 0, 0.3); border-left: 3px solid ${cvssColor}; padding: 6px; margin: 4px 0; font-size: 0.75em;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <span style="color: #00ccff; font-weight: bold;">${vuln.cve || 'N/A'}</span>
+                                ${vuln.exploit_available ? '<span style="color: #ff0055; margin-left: 8px; font-size: 0.9em;"><i class="fa-solid fa-bolt"></i> EXPLOIT READY</span>' : ''}
+                                <div style="color: #888; margin-top: 2px;">${vuln.host || ''} - ${vuln.service || ''}</div>
+                            </div>
+                            ${vuln.cvss ? `<span style="color: ${cvssColor}; font-weight: bold; white-space: nowrap; margin-left: 8px;">${vuln.cvss}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Attack Operations - Killchain Progress — from backend state
+        function updateKillchainProgress(phases) {
+            if (!phases) {
+                phases = [
+                    { name: 'RECON', status: 'pending' },
+                    { name: 'WEAPONIZE', status: 'pending' },
+                    { name: 'DELIVER', status: 'pending' },
+                    { name: 'EXPLOIT', status: 'pending' },
+                    { name: 'INSTALL', status: 'pending' },
+                    { name: 'C2', status: 'pending' },
+                    { name: 'EXECUTE', status: 'pending' },
+                ];
+            }
+
+            const killchainDiv = document.getElementById('killchainProgress');
+            killchainDiv.innerHTML = `
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between;">
+                    ${phases.map(phase => {
+                        const icon = phase.status === 'complete' ? '✓' : phase.status === 'active' ? '⟳' : '○';
+                        const color = phase.status === 'complete' ? '#00ff41' : 
+                                     phase.status === 'active' ? '#ffaa00' : '#444';
+                        const bgColor = phase.status === 'complete' ? 'rgba(0, 255, 65, 0.1)' : 
+                                       phase.status === 'active' ? 'rgba(255, 170, 0, 0.1)' : 'rgba(68, 68, 68, 0.1)';
+                        return `
+                            <div style="flex: 1; min-width: 70px; text-align: center; padding: 8px; background: ${bgColor}; border: 1px solid ${color};">
+                                <div style="color: ${color}; font-size: 1.2em;">${icon}</div>
+                                <div style="color: ${color}; font-size: 0.7em; margin-top: 3px; font-weight: bold;">${phase.name}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // Initialize with empty state
+        updateActiveExploits([]);
+        updateCriticalVulns([]);
+        updateKillchainProgress();
+
+        // Compromised Assets — populated from backend session state only
+        function updateCompromisedHosts(compromised) {
+            const hostsDiv = document.getElementById('compromisedHosts');
+            if (!compromised || compromised.length === 0) {
+                hostsDiv.innerHTML = '<div style="color: #888; padding: 20px; text-align: center; font-size: 0.8em;">No compromised hosts — register via exploit framework</div>';
+                return;
+            }
+            hostsDiv.innerHTML = compromised.map((host, idx) => {
+                const privColor = host.privilege === 'SYSTEM' || host.privilege === 'root' ? '#ff0055' : 
+                                 host.privilege === 'admin' ? '#ffaa00' : '#00ccff';
+                const privIcon = host.privilege === 'SYSTEM' || host.privilege === 'root' ? 'fa-crown' : 
+                                host.privilege === 'admin' ? 'fa-shield' : 'fa-user';
+                
+                return `
+                    <div class="host-item" style="position: relative;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid ${privIcon}" style="color: ${privColor}; font-size: 1em;"></i>
+                                    <span class="host-ip">${host.ip}</span>
+                                    <span style="color: ${privColor}; font-size: 0.75em; border: 1px solid ${privColor}; padding: 2px 6px; border-radius: 2px;">${host.privilege}</span>
+                                </div>
+                                <div style="font-size: 0.8em; color: #888; margin-top: 3px;">${host.hostname || 'unknown'} - ${host.os || 'unknown'}</div>
+                                <div style="font-size: 0.75em; color: #00ccff; margin-top: 3px;">
+                                    <i class="fa-solid fa-terminal" style="font-size: 0.9em;"></i> ${host.shell || 'N/A'} | 
+                                    <i class="fa-solid fa-clock" style="font-size: 0.9em;"></i> ${host.last_seen || 'N/A'}
+                                    ${(host.loot || 0) > 0 ? ` | <i class="fa-solid fa-gem" style="font-size: 0.9em;"></i> ${host.loot} items` : ''}
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 5px; flex-direction: column;">
+                                <button class="btn btn-small" style="padding: 3px 8px; font-size: 0.7em;" onclick="interactHost('${host.ip}')">
+                                    <i class="fa-solid fa-terminal"></i> SHELL
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        updateCompromisedHosts([]);
+
+        // Interaction Functions — send commands to backend
+        function interactSession(sessionId) {
+            addTerminalLine(`[*] Switching to ${sessionId}...`, 'output');
+            addTerminalLine(`[*] Session interaction requires backend connection`, 'output');
+        }
+
+        function launchExploit(cve, target) {
+            addTerminalLine(`[*] Registering exploit launch: ${cve} against ${target}...`, 'output');
+            // Send to backend via API
+            fetch('/api/exploits/launch', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({target: target, exploit: cve})
+            }).then(r => r.json()).then(data => {
+                addTerminalLine(`[+] ${data.message || 'Exploit registered'}`, 'output');
+                socket.emit('request_sessions');
+            }).catch(err => {
+                addTerminalLine(`[!] Backend error: ${err}`, 'error');
+            });
+        }
+
+        function interactHost(ip) {
+            // Switch to terminal mode and prefill
+            switchMode('terminal');
+            document.getElementById('terminalInput').value = `nmap -sV ${ip}`;
+            document.getElementById('terminalInput').focus();
+            addTerminalLine(`[*] Switched to terminal for ${ip}`, 'output');
+        }
+
+        function refreshCompromised() {
+            addTerminalLine('[*] Refreshing compromised hosts from backend...', 'output');
+            socket.emit('request_sessions');
+        }
+
+        function killAllSessions() {
+            if (confirm('Kill all active sessions?')) {
+                addTerminalLine('[!] Terminating all sessions...', 'error');
+                fetch('/api/exploits/sessions/kill-all', {method: 'POST'})
+                .then(r => r.json())
+                .then(data => {
+                    addTerminalLine(`[!] ${data.sessions_terminated || 0} sessions terminated`, 'error');
+                    updateCompromisedHosts([]);
+                    updateActiveExploits([]);
+                    updateKillchainProgress();
+                    socket.emit('request_sessions');
+                }).catch(err => {
+                    addTerminalLine(`[!] Error: ${err}`, 'error');
+                });
+            }
+        }
+
+        // Metrics are updated exclusively via WebSocket — no simulated data
+        // The socket.on('metrics_update') handler below handles all metric DOM updates
+
+        // Terminal functions
+        function addTerminalLine(text, type = 'output') {
+            const terminal = document.getElementById('dashboardTerminal');
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.innerHTML = `<span class="terminal-${type}">${text}</span>`;
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function scanNetwork() {
+            addTerminalLine('[*] Initiating network scan via backend...', 'output');
+            socket.emit('scan_network', { target: '192.168.1.0/24', scan_type: 'quick' });
+        }
+
+        // Full Terminal
+        const terminalInput = document.getElementById('terminalInput');
+        const fullTerminal = document.getElementById('fullTerminal');
+
+        terminalInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const command = this.value.trim();
+                if (command) {
+                    executeCommand(command);
+                    this.value = '';
+                }
+            }
+        });
+
+        function executeCommand(cmd) {
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.innerHTML = `<span class="terminal-prompt">root@netmon:~#</span> <span style="color: #fff;">${cmd}</span>`;
+            
+            const inputLine = fullTerminal.querySelector('.terminal-input-line');
+            fullTerminal.insertBefore(line, inputLine);
+
+            setTimeout(() => {
+                const output = getCommandOutput(cmd);
+                const outputLine = document.createElement('div');
+                outputLine.className = 'terminal-line';
+                outputLine.innerHTML = `<span class="terminal-output">${output}</span>`;
+                fullTerminal.insertBefore(outputLine, inputLine);
+                fullTerminal.scrollTop = fullTerminal.scrollHeight;
+            }, 100);
+        }
+
+        // Terminal commands are sent to backend via WebSocket
+        // The getCommandOutput function below is only used as offline fallback
+        function getCommandOutput(cmd) {
+            return `[!] Backend not connected. Command '${cmd}' requires backend.`;
+        }
+
+        // Tool Modal Functions
+        function openTool(tool) {
+            const modal = document.getElementById('toolModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+
+            const toolConfigs = {
+                'nmap': {
+                    title: 'NMAP SCANNER CONFIGURATION',
+                    form: `
+                        <div class="form-group">
+                            <label class="form-label">Target (IP/CIDR/Domain)</label>
+                            <input type="text" class="form-input" placeholder="192.168.1.0/24" id="nmapTarget">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Scan Type</label>
+                            <select class="form-select" id="nmapScanType">
+                                <option>Quick Scan (-T4 -F)</option>
+                                <option>Intense Scan (-T4 -A -v)</option>
+                                <option>Stealth Scan (-sS)</option>
+                                <option>Version Detection (-sV)</option>
+                                <option>OS Detection (-O)</option>
+                                <option>Comprehensive (-sS -sV -O -A)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Port Range</label>
+                            <input type="text" class="form-input" placeholder="1-65535" id="nmapPorts">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Additional Options</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox"> Script Scan (-sC)</label>
+                                <label class="checkbox-label"><input type="checkbox"> UDP Scan (-sU)</label>
+                                <label class="checkbox-label"><input type="checkbox"> Verbose (-v)</label>
+                                <label class="checkbox-label"><input type="checkbox"> Save Output</label>
+                            </div>
+                        </div>
+                        <button class="btn" onclick="runNmapScan()">START SCAN</button>
+                        <div class="scan-results" id="nmapResults" style="display:none;"></div>
+                    `
+                },
+                'portscan': {
+                    title: 'PORT SCANNER CONFIGURATION',
+                    form: `
+                        <div class="form-group">
+                            <label class="form-label">Target Host</label>
+                            <input type="text" class="form-input" placeholder="192.168.1.1" id="portTarget">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Port Range</label>
+                            <input type="text" class="form-input" placeholder="1-1000" id="portRange">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Protocol</label>
+                            <select class="form-select">
+                                <option>TCP</option>
+                                <option>UDP</option>
+                                <option>Both</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Threads</label>
+                            <input type="number" class="form-input" value="100" min="1" max="1000">
+                        </div>
+                        <button class="btn" onclick="runPortScan()">START SCAN</button>
+                        <div class="scan-results" id="portResults" style="display:none;"></div>
+                    `
+                },
+                'vulnscan': {
+                    title: 'VULNERABILITY SCANNER',
+                    form: `
+                        <div class="form-group">
+                            <label class="form-label">Target</label>
+                            <input type="text" class="form-input" placeholder="192.168.1.0/24">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Scan Profile</label>
+                            <select class="form-select">
+                                <option>Quick Discovery</option>
+                                <option>Full Audit</option>
+                                <option>Web Application</option>
+                                <option>Network Services</option>
+                                <option>Custom</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Vulnerability Database</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" checked> CVE Database</label>
+                                <label class="checkbox-label"><input type="checkbox" checked> ExploitDB</label>
+                                <label class="checkbox-label"><input type="checkbox"> OWASP Top 10</label>
+                                <label class="checkbox-label"><input type="checkbox"> Custom Scripts</label>
+                            </div>
+                        </div>
+                        <button class="btn" onclick="runVulnScan()">START ASSESSMENT</button>
+                        <div class="scan-results" id="vulnResults" style="display:none;"></div>
+                    `
+                },
+                'webscan': {
+                    title: 'WEB APPLICATION SCANNER',
+                    form: `
+                        <div class="form-group">
+                            <label class="form-label">Target URL</label>
+                            <input type="text" class="form-input" placeholder="https://target.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Scan Modules</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" checked> SQL Injection</label>
+                                <label class="checkbox-label"><input type="checkbox" checked> XSS</label>
+                                <label class="checkbox-label"><input type="checkbox"> CSRF</label>
+                                <label class="checkbox-label"><input type="checkbox"> Directory Traversal</label>
+                                <label class="checkbox-label"><input type="checkbox"> SSL/TLS Issues</label>
+                                <label class="checkbox-label"><input type="checkbox"> Authentication Bypass</label>
+                            </div>
+                        </div>
+                        <button class="btn" onclick="runWebScan()">START SCAN</button>
+                        <div class="scan-results" id="webResults" style="display:none;"></div>
+                    `
+                },
+                'sniffer': {
+                    title: 'PACKET CAPTURE & ANALYSIS',
+                    form: `
+                        <div class="form-group">
+                            <label class="form-label">Network Interface</label>
+                            <select class="form-select" id="snifferInterface">
+                                <option>eth0 (Primary)</option>
+                                <option>wlan0 (Wireless)</option>
+                                <option>lo (Loopback)</option>
+                                <option>any (All Interfaces)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Capture Filter (BPF)</label>
+                            <input type="text" class="form-input" placeholder="tcp port 80 or tcp port 443" id="snifferFilter">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Packet Count Limit</label>
+                            <input type="number" class="form-input" placeholder="100" value="100" id="snifferCount">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Capture Options</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" checked> Promiscuous Mode</label>
+                                <label class="checkbox-label"><input type="checkbox"> DNS Resolution</label>
+                                <label class="checkbox-label"><input type="checkbox" checked> Protocol Analysis</label>
+                                <label class="checkbox-label"><input type="checkbox"> Save PCAP File</label>
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn" onclick="runPacketCapture()">START CAPTURE</button>
+                            <button class="btn btn-danger" onclick="stopPacketCapture()">STOP</button>
+                        </div>
+                        <div class="scan-results" id="snifferResults" style="display:none;"></div>
+                    `
+                },
+                'dnsenum': {
+                    title: 'DNS ENUMERATION & RECON',
+                    form: `
+                        <div class="form-group">
+                            <label class="form-label">Target Domain</label>
+                            <input type="text" class="form-input" placeholder="example.com" id="dnsTarget">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Enumeration Mode</label>
+                            <select class="form-select" id="dnsMode">
+                                <option>Standard Lookup</option>
+                                <option>Zone Transfer (AXFR)</option>
+                                <option>Subdomain Brute Force</option>
+                                <option>Reverse DNS</option>
+                                <option>Comprehensive</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Record Types</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" checked> A Records</label>
+                                <label class="checkbox-label"><input type="checkbox" checked> AAAA Records</label>
+                                <label class="checkbox-label"><input type="checkbox" checked> MX Records</label>
+                                <label class="checkbox-label"><input type="checkbox"> NS Records</label>
+                                <label class="checkbox-label"><input type="checkbox"> TXT Records</label>
+                                <label class="checkbox-label"><input type="checkbox"> CNAME Records</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Wordlist for Subdomain Brute Force</label>
+                            <select class="form-select">
+                                <option>Small (1K subdomains)</option>
+                                <option>Medium (10K subdomains)</option>
+                                <option>Large (100K subdomains)</option>
+                                <option>Custom Wordlist</option>
+                            </select>
+                        </div>
+                        <button class="btn" onclick="runDNSEnum()">START ENUMERATION</button>
+                        <div class="scan-results" id="dnsResults" style="display:none;"></div>
+                    `
+                },
+                'bruteforce': {
+                    title: 'AUTHENTICATION BRUTE FORCE',
+                    form: `
+                        <div class="form-group">
+                            <label class="form-label">Target Host</label>
+                            <input type="text" class="form-input" placeholder="192.168.1.10" id="bruteTarget">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Service/Protocol</label>
+                            <select class="form-select" id="bruteService">
+                                <option>SSH (Port 22)</option>
+                                <option>FTP (Port 21)</option>
+                                <option>Telnet (Port 23)</option>
+                                <option>HTTP/HTTPS (Form-based)</option>
+                                <option>RDP (Port 3389)</option>
+                                <option>SMB (Port 445)</option>
+                                <option>MySQL (Port 3306)</option>
+                                <option>PostgreSQL (Port 5432)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-input" placeholder="admin or path/to/userlist.txt" id="bruteUser">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password Wordlist</label>
+                            <select class="form-select" id="bruteWordlist">
+                                <option>rockyou.txt (14M passwords)</option>
+                                <option>common-passwords.txt (10K)</option>
+                                <option>darkweb2017.txt (9.9M)</option>
+                                <option>custom.txt</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Attack Options</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox"> Continue on Success</label>
+                                <label class="checkbox-label"><input type="checkbox"> Verbose Output</label>
+                                <label class="checkbox-label"><input type="checkbox" checked> Stop on First Match</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Threads (Parallel Attempts)</label>
+                            <input type="number" class="form-input" value="16" min="1" max="64" id="bruteThreads">
+                        </div>
+                        <div style="background: rgba(255, 0, 85, 0.1); border: 1px solid #ff0055; padding: 10px; margin: 15px 0;">
+                            <strong style="color: #ff0055;">⚠ WARNING:</strong> Only use on systems you own or have explicit authorization to test.
+                        </div>
+                        <button class="btn btn-danger" onclick="runBruteForce()">START ATTACK</button>
+                        <div class="scan-results" id="bruteResults" style="display:none;"></div>
+                    `
+                },
+                'exploit': {
+                    title: 'EXPLOIT DATABASE & FRAMEWORK',
+                    form: `
+                        <div class="form-group">
+                            <label class="form-label">Search Exploits</label>
+                            <input type="text" class="form-input" placeholder="CVE-2023-1234 or Apache 2.4" id="exploitSearch">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Exploit Type</label>
+                            <select class="form-select" id="exploitType">
+                                <option>All Types</option>
+                                <option>Remote Code Execution</option>
+                                <option>Local Privilege Escalation</option>
+                                <option>SQL Injection</option>
+                                <option>Buffer Overflow</option>
+                                <option>Cross-Site Scripting</option>
+                                <option>Denial of Service</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Platform</label>
+                            <select class="form-select" id="exploitPlatform">
+                                <option>All Platforms</option>
+                                <option>Linux</option>
+                                <option>Windows</option>
+                                <option>MacOS</option>
+                                <option>Web Application</option>
+                                <option>Hardware/IoT</option>
+                            </select>
+                        </div>
+                        <button class="btn" onclick="searchExploits()">SEARCH DATABASE</button>
+                        
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #00ff41;">
+                            <div class="form-group">
+                                <label class="form-label">Target Host (for deployment)</label>
+                                <input type="text" class="form-input" placeholder="192.168.1.10" id="exploitTarget">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Payload Options</label>
+                                <textarea class="form-textarea" placeholder="LHOST=192.168.1.100&#10;LPORT=4444&#10;RHOST=target" id="exploitOptions"></textarea>
+                            </div>
+                            <div style="background: rgba(255, 0, 85, 0.2); border: 2px solid #ff0055; padding: 15px; margin: 15px 0;">
+                                <strong style="color: #ff0055; font-size: 1.2em;">🚨 CRITICAL WARNING 🚨</strong><br>
+                                <span style="color: #ff0055;">Unauthorized exploitation is ILLEGAL. Only use on authorized targets with written permission.</span>
+                            </div>
+                            <button class="btn btn-danger" onclick="deployExploit()">DEPLOY EXPLOIT</button>
+                        </div>
+                        <div class="scan-results" id="exploitResults" style="display:none;"></div>
+                    `
+                },
+                'report': {
+                    title: 'REPORT GENERATOR',
+                    form: `
+                        <div class="form-group">
+                            <label class="form-label">Report Title</label>
+                            <input type="text" class="form-input" placeholder="Security Assessment Report" id="reportTitle">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Assessment Type</label>
+                            <select class="form-select" id="reportType">
+                                <option>Penetration Test</option>
+                                <option>Vulnerability Assessment</option>
+                                <option>Network Audit</option>
+                                <option>Web Application Test</option>
+                                <option>Red Team Exercise</option>
+                                <option>Compliance Audit</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Client/Organization</label>
+                            <input type="text" class="form-input" placeholder="Company Name" id="reportClient">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Target Scope</label>
+                            <textarea class="form-textarea" placeholder="192.168.1.0/24&#10;example.com&#10;app.example.com" id="reportScope"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Include Sections</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" checked> Executive Summary</label>
+                                <label class="checkbox-label"><input type="checkbox" checked> Methodology</label>
+                                <label class="checkbox-label"><input type="checkbox" checked> Findings & Vulnerabilities</label>
+                                <label class="checkbox-label"><input type="checkbox" checked> Risk Assessment</label>
+                                <label class="checkbox-label"><input type="checkbox" checked> Recommendations</label>
+                                <label class="checkbox-label"><input type="checkbox"> Technical Appendix</label>
+                                <label class="checkbox-label"><input type="checkbox"> Scan Outputs</label>
+                                <label class="checkbox-label"><input type="checkbox"> Compliance Mapping</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Report Format</label>
+                            <select class="form-select" id="reportFormat">
+                                <option>PDF (Professional)</option>
+                                <option>HTML (Interactive)</option>
+                                <option>DOCX (Editable)</option>
+                                <option>JSON (API Export)</option>
+                                <option>Markdown</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Severity Filter</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" checked> Critical</label>
+                                <label class="checkbox-label"><input type="checkbox" checked> High</label>
+                                <label class="checkbox-label"><input type="checkbox" checked> Medium</label>
+                                <label class="checkbox-label"><input type="checkbox"> Low</label>
+                                <label class="checkbox-label"><input type="checkbox"> Informational</label>
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn" onclick="generateReport()">GENERATE REPORT</button>
+                            <button class="btn" onclick="previewReport()">PREVIEW</button>
+                        </div>
+                        <div class="scan-results" id="reportResults" style="display:none;"></div>
+                    `
+                }
+            };
+
+            const config = toolConfigs[tool];
+            if (config) {
+                modalTitle.textContent = config.title;
+                modalBody.innerHTML = config.form;
+                modal.classList.add('active');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('toolModal').classList.remove('active');
+        }
+
+        // Real Scan Functions — all call the backend API
+        function runNmapScan() {
+            const target = document.getElementById('nmapTarget')?.value || '127.0.0.1';
+            const scanTypeSelect = document.getElementById('nmapScanType');
+            const scanTypeMap = {'Quick Scan (-T4 -F)': 'quick', 'Intense Scan (-T4 -A -v)': 'intense', 'Stealth Scan (-sS)': 'stealth', 'Version Detection (-sV)': 'version', 'OS Detection (-O)': 'os', 'Comprehensive (-sS -sV -O -A)': 'comprehensive'};
+            const scanType = scanTypeMap[scanTypeSelect?.value] || 'quick';
+            
+            const results = document.getElementById('nmapResults');
+            results.style.display = 'block';
+            results.innerHTML = '<div class="terminal-output">[*] Starting Nmap scan on ' + target + '...</div>';
+            
+            fetch('/api/tools/nmap/scan', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({target, scan_type: scanType})
+            }).then(r => r.json()).then(data => {
+                if (data.error) {
+                    results.innerHTML += `<div class="result-item critical"><strong>Error:</strong> ${data.error}</div>`;
+                    return;
+                }
+                if (data.hosts && data.hosts.length > 0) {
+                    data.hosts.forEach(host => {
+                        let portsHtml = host.ports.map(p => `${p.port}/${p.protocol} (${p.service} ${p.version || ''}) - ${p.state}`).join('<br>');
+                        results.innerHTML += `
+                            <div class="result-item">
+                                <strong>Host:</strong> ${host.ip} (${host.state.toUpperCase()})${host.hostname !== 'Unknown' ? ' - ' + host.hostname : ''}<br>
+                                ${host.os ? '<strong>OS:</strong> ' + host.os + '<br>' : ''}
+                                <strong>Ports:</strong><br>${portsHtml || 'No open ports found'}
+                            </div>`;
+                    });
+                    results.innerHTML += `<div class="terminal-output">[+] Scan complete. ${data.hosts.length} host(s) found</div>`;
+                } else {
+                    results.innerHTML += '<div class="result-item">No hosts discovered</div>';
+                }
+            }).catch(err => {
+                results.innerHTML += `<div class="result-item critical">Backend error: ${err}</div>`;
+            });
+        }
+
+        function runPortScan() {
+            const target = document.getElementById('portTarget')?.value || '127.0.0.1';
+            const ports = document.getElementById('portRange')?.value || '1-1000';
+            
+            const results = document.getElementById('portResults');
+            results.style.display = 'block';
+            results.innerHTML = '<div class="terminal-output">[*] Scanning ports on ' + target + '...</div>';
+            
+            fetch('/api/tools/portscan', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({target, ports})
+            }).then(r => r.json()).then(data => {
+                if (data.error) {
+                    results.innerHTML += `<div class="result-item critical">${data.error}</div>`;
+                    return;
+                }
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(p => {
+                        const riskClass = [3389, 23, 21, 445].includes(p.port) ? 'critical' : '';
+                        results.innerHTML += `<div class="result-item ${riskClass}">Port ${p.port} (${p.service}) - OPEN${p.version ? ' - ' + p.version : ''}</div>`;
+                    });
+                    results.innerHTML += `<div class="terminal-output">[+] Scan complete. ${data.length} open port(s)</div>`;
+                } else {
+                    results.innerHTML += '<div class="result-item">No open ports found in range</div>';
+                }
+            }).catch(err => {
+                results.innerHTML += `<div class="result-item critical">Backend error: ${err}</div>`;
+            });
+        }
+
+        function runVulnScan() {
+            const target = document.querySelector('#toolModal .form-input')?.value || '127.0.0.1';
+            const results = document.getElementById('vulnResults');
+            results.style.display = 'block';
+            results.innerHTML = '<div class="terminal-output">[*] Running vulnerability assessment on ' + target + '...</div><div class="terminal-output">[*] This may take 1-2 minutes...</div>';
+            
+            fetch('/api/tools/vulnscan', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({target})
+            }).then(r => r.json()).then(data => {
+                if (data.error) {
+                    results.innerHTML += `<div class="result-item critical">${data.error}</div>`;
+                }
+                if (data.vulnerabilities && data.vulnerabilities.length > 0) {
+                    data.vulnerabilities.forEach(v => {
+                        const cls = v.severity === 'high' ? 'critical' : 'warning';
+                        results.innerHTML += `<div class="result-item ${cls}"><strong>${v.cve}</strong> - ${v.service} on ${v.host}${v.port ? ':' + v.port : ''}<br>${v.detail || ''}</div>`;
+                    });
+                    // Update dashboard vulns panel
+                    updateCriticalVulns(data.vulnerabilities);
+                } else {
+                    results.innerHTML += '<div class="result-item">No vulnerabilities detected by NSE scripts</div>';
+                }
+                if (data.raw_output) {
+                    results.innerHTML += `<details style="margin-top: 10px;"><summary style="cursor: pointer; color: #00ccff;">Raw Output</summary><pre style="font-size: 0.75em; color: #888; white-space: pre-wrap; max-height: 200px; overflow-y: auto;">${data.raw_output}</pre></details>`;
+                }
+                results.innerHTML += '<div class="terminal-output">[+] Vulnerability assessment complete</div>';
+            }).catch(err => {
+                results.innerHTML += `<div class="result-item critical">Backend error: ${err}</div>`;
+            });
+        }
+
+        function runWebScan() {
+            const target = document.querySelector('#toolModal .form-input')?.value || '';
+            const results = document.getElementById('webResults');
+            results.style.display = 'block';
+            results.innerHTML = '<div class="terminal-output">[*] Scanning web application: ' + target + '...</div>';
+            
+            fetch('/api/tools/webscan', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({target})
+            }).then(r => r.json()).then(data => {
+                if (data.error) {
+                    results.innerHTML += `<div class="result-item critical">${data.error}</div>`;
+                    return;
+                }
+                if (data.findings && data.findings.length > 0) {
+                    data.findings.forEach(f => {
+                        const cls = f.severity === 'critical' ? 'critical' : f.severity === 'warning' ? 'warning' : '';
+                        results.innerHTML += `<div class="result-item ${cls}">${f.message}</div>`;
+                    });
+                } else {
+                    results.innerHTML += '<div class="result-item">No findings from web scan</div>';
+                }
+                if (data.raw_output) {
+                    results.innerHTML += `<details style="margin-top: 10px;"><summary style="cursor: pointer; color: #00ccff;">Raw Output</summary><pre style="font-size: 0.75em; color: #888; white-space: pre-wrap; max-height: 200px; overflow-y: auto;">${data.raw_output}</pre></details>`;
+                }
+                results.innerHTML += '<div class="terminal-output">[+] Web scan complete</div>';
+            }).catch(err => {
+                results.innerHTML += `<div class="result-item critical">Backend error: ${err}</div>`;
+            });
+        }
+
+        function runPacketCapture() {
+            const iface = document.getElementById('snifferInterface')?.value?.split(' ')[0] || 'eth0';
+            const filter = document.getElementById('snifferFilter')?.value || '';
+            const count = document.getElementById('snifferCount')?.value || '20';
+            const results = document.getElementById('snifferResults');
+            results.style.display = 'block';
+            results.innerHTML = `<div class="terminal-output">[*] Starting packet capture on ${iface}...</div>`;
+            
+            // Execute tcpdump via backend terminal
+            const cmd = `tcpdump -i ${iface} -c ${count} ${filter ? filter : ''} -nn 2>&1 | head -30`;
+            socket.emit('execute_command', {command: `tcpdump -i ${iface} -c ${count} -nn`});
+            results.innerHTML += '<div class="terminal-output">[*] Capture sent to backend terminal — check terminal output</div>';
+        }
+
+        function stopPacketCapture() {
+            const results = document.getElementById('snifferResults');
+            if (results) {
+                results.innerHTML += '<div class="terminal-output" style="color: #ff0055;">[!] Capture stop requested</div>';
+            }
+        }
+
+        function runDNSEnum() {
+            const target = document.getElementById('dnsTarget')?.value || '';
+            const mode = document.getElementById('dnsMode')?.value?.toLowerCase()?.replace(/\s+/g, '_') || 'standard';
+            const results = document.getElementById('dnsResults');
+            results.style.display = 'block';
+            results.innerHTML = '<div class="terminal-output">[*] Starting DNS enumeration for ' + target + '...</div>';
+            
+            fetch('/api/tools/dns', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({target, mode, record_types: ['A', 'AAAA', 'MX', 'NS', 'TXT', 'CNAME']})
+            }).then(r => r.json()).then(data => {
+                if (data.error) {
+                    results.innerHTML += `<div class="result-item critical">${data.error}</div>`;
+                    return;
+                }
+                if (data.records && data.records.length > 0) {
+                    // Group by type
+                    const grouped = {};
+                    data.records.forEach(r => {
+                        if (!grouped[r.type]) grouped[r.type] = [];
+                        grouped[r.type].push(r);
+                    });
+                    for (const [type, records] of Object.entries(grouped)) {
+                        results.innerHTML += `<div class="result-item"><strong>${type} Records:</strong><br>${records.map(r => `${r.name} → ${r.value} (TTL: ${r.ttl})`).join('<br>')}</div>`;
+                    }
+                } else {
+                    results.innerHTML += '<div class="result-item">No DNS records found</div>';
+                }
+                if (data.zone_transfer) {
+                    const cls = data.zone_transfer.success ? 'critical' : '';
+                    results.innerHTML += `<div class="result-item ${cls}"><strong>Zone Transfer:</strong> ${data.zone_transfer.success ? 'ALLOWED — security risk!' : 'Denied (secure)'}</div>`;
+                }
+                results.innerHTML += `<div class="terminal-output">[+] DNS enumeration complete. ${data.records?.length || 0} records found</div>`;
+            }).catch(err => {
+                results.innerHTML += `<div class="result-item critical">Backend error: ${err}</div>`;
+            });
+        }
+
+        function runBruteForce() {
+            const target = document.getElementById('bruteTarget')?.value || '';
+            const service = document.getElementById('bruteService')?.value?.split(' ')[0]?.toLowerCase() || 'ssh';
+            const user = document.getElementById('bruteUser')?.value || 'admin';
+            const results = document.getElementById('bruteResults');
+            results.style.display = 'block';
+            results.innerHTML = `<div class="terminal-output">[*] Sending hydra command to backend terminal...</div>`;
+            
+            // Execute via backend command executor
+            const cmd = `hydra -l ${user} -P /usr/share/wordlists/rockyou.txt ${target} ${service} -t 4 -V 2>&1 | tail -20`;
+            socket.emit('execute_command', {command: `hydra -l ${user} -P /usr/share/wordlists/rockyou.txt ${target} ${service} -t 4`});
+            results.innerHTML += '<div class="terminal-output">[*] Brute force command sent — monitor terminal for results</div>';
+        }
+
+        function searchExploits() {
+            const query = document.getElementById('exploitSearch')?.value || '';
+            const results = document.getElementById('exploitResults');
+            results.style.display = 'block';
+            results.innerHTML = `<div class="terminal-output">[*] Searching for: ${query}...</div>`;
+            
+            // Use searchsploit if available
+            socket.emit('execute_command', {command: `searchsploit ${query} 2>&1 | head -30`});
+            results.innerHTML += '<div class="terminal-output">[*] Search sent to backend terminal — check output below</div>';
+        }
+
+        function deployExploit() {
+            const target = document.getElementById('exploitTarget')?.value || '';
+            const options = document.getElementById('exploitOptions')?.value || '';
+            const results = document.getElementById('exploitResults');
+            
+            if (!target) {
+                results.innerHTML += '<div class="result-item critical">[!] No target specified</div>';
+                return;
+            }
+            
+            // Register the exploit launch via API
+            fetch('/api/exploits/launch', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({target, exploit: 'manual_deploy', payload: {options}})
+            }).then(r => r.json()).then(data => {
+                results.innerHTML += `<div class="result-item warning">[*] ${data.message || 'Exploit registered'} — Session: ${data.session_id || 'N/A'}</div>`;
+                socket.emit('request_sessions');
+            }).catch(err => {
+                results.innerHTML += `<div class="result-item critical">Backend error: ${err}</div>`;
+            });
+        }
+
+        function generateReport() {
+            const title = document.getElementById('reportTitle')?.value || 'Security Assessment Report';
+            const type = document.getElementById('reportType')?.value || 'Penetration Test';
+            const client = document.getElementById('reportClient')?.value || 'N/A';
+            const results = document.getElementById('reportResults');
+            results.style.display = 'block';
+            results.innerHTML = '<div class="terminal-output">[*] Generating report from real scan data...</div>';
+            
+            // Fetch real system stats for the report
+            Promise.all([
+                fetch('/api/dashboard/alerts').then(r => r.json()),
+                fetch('/api/dashboard/system-status').then(r => r.json()),
+                fetch('/api/exploits/sessions').then(r => r.json()),
+                fetch('/api/exploits/compromised').then(r => r.json())
+            ]).then(([alerts, status, sessions, compromised]) => {
+                const critAlerts = alerts.filter(a => a.severity === 'critical').length;
+                const warnAlerts = alerts.filter(a => a.severity === 'warning').length;
+                
+                results.innerHTML += `
+                    <div class="result-item">
+                        <strong>Report: ${title}</strong><br>
+                        Type: ${type} | Client: ${client}<br>
+                        Generated: ${new Date().toISOString()}
+                    </div>
+                    <div class="result-item ${critAlerts > 0 ? 'critical' : ''}">
+                        <strong>Alert Summary:</strong><br>
+                        Critical: ${critAlerts} | Warning: ${warnAlerts} | Info: ${alerts.length - critAlerts - warnAlerts}
+                    </div>
+                    <div class="result-item">
+                        <strong>System Status:</strong><br>
+                        Uptime: ${status.uptime} | Attack Surface: ${status.attack_surface} listening ports<br>
+                        Last Scan: ${status.last_scan}
+                    </div>
+                    <div class="result-item">
+                        <strong>Active Sessions:</strong> ${sessions.length}<br>
+                        <strong>Compromised Hosts:</strong> ${compromised.length}
+                    </div>
+                    <div class="terminal-output">[+] Report generated from live system data</div>
+                `;
+            }).catch(err => {
+                results.innerHTML += `<div class="result-item critical">Error fetching data: ${err}</div>`;
+            });
+        }
+
+        function previewReport() {
+            generateReport(); // Same as generate — uses real data
+        }
+    </script>
+
+    <!-- Socket.IO Client Library -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+    <!-- WebSocket Integration -->
+    <script>
+        // Connect to backend WebSocket
+        const socket = io('http://localhost:5000');
+
+        socket.on('connect', function() {
+            console.log('[+] Connected to MEGA REAPER 9000 backend');
+            addTerminalLine('[+] Backend connection established — all data is LIVE', 'output');
+            // Immediately request system status to clear "awaiting" message
+            socket.emit('request_system_status');
+            socket.emit('request_alerts');
+            socket.emit('request_sessions');
+        });
+
+        socket.on('disconnect', function() {
+            console.log('[-] Disconnected from backend');
+            addTerminalLine('[!] Backend connection lost — reconnecting...', 'error');
+        });
+
+        // Real-time metrics updates
+        socket.on('metrics_update', function(data) {
+            document.getElementById('hostsOnline').textContent = data.hosts_online || 0;
+            document.getElementById('openPorts').textContent = data.open_ports || 0;
+            document.getElementById('bandwidth').textContent = (data.bandwidth || 0).toFixed(1) + ' MB/s';
+            document.getElementById('latency').textContent = (data.latency || 0) + ' ms';
+            
+            const cpu = data.cpu_usage || 0;
+            document.getElementById('cpuUsage').textContent = cpu + '%';
+            document.getElementById('cpuBar').style.width = cpu + '%';
+            document.getElementById('cpuText').textContent = cpu + '%';
+            
+            const mem = data.memory_usage || 0;
+            document.getElementById('memUsage').textContent = mem + '%';
+            document.getElementById('memBar').style.width = mem + '%';
+            document.getElementById('memText').textContent = mem + '%';
+            
+            // Update system status alert box with live data
+            const alertBox = document.getElementById('systemAlertBox');
+            if (alertBox && alertBox.textContent.indexOf('Awaiting') !== -1) {
+                // Only override if still showing placeholder
+                alertBox.innerHTML = '<div class="alert-icon" style="color:#00ff41;">✓</div><div>Connected — ' + (data.hosts_online || 0) + ' hosts | ' + (data.open_ports || 0) + ' connections</div>';
+            }
+        });
+
+        // Real-time connections update
+        socket.on('connections_update', function(connections) {
+            const table = document.getElementById('activeConnectionsTable');
+            if (!connections || connections.length === 0) {
+                table.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888; padding: 20px;">No active connections</td></tr>';
+                return;
+            }
+
+            table.innerHTML = connections.slice(0, 15).map(conn => {
+                const stateColor = conn.state === 'ESTABLISHED' ? '#00ff41' : 
+                                   conn.state === 'LISTEN' ? '#00ccff' : '#ffaa00';
+                const dev = conn.device || {};
+                const devLabel = dev.friendly_name || dev.manufacturer || '';
+                const devIcon = dev.icon || '';
+                const remoteDisplay = devLabel 
+                    ? `<div>${conn.remote_addr}</div><div style="font-size:0.75em; color:#00ccff; margin-top:2px;">${devIcon ? '<i class="fa-solid ' + devIcon + '" style="margin-right:4px;"></i>' : ''}${devLabel}${dev.mac ? ' <span style="color:#555;">(' + dev.mac.substring(0,8) + ')</span>' : ''}</div>`
+                    : conn.remote_addr;
+                return `
+                    <tr style="border-bottom: 1px solid rgba(0, 255, 65, 0.1);">
+                        <td style="padding: 8px; color: #00ccff;">${conn.protocol}</td>
+                        <td style="padding: 8px;">${conn.local_addr}</td>
+                        <td style="padding: 8px;">${remoteDisplay}</td>
+                        <td style="padding: 8px; color: ${stateColor};">${conn.state}</td>
+                        <td style="padding: 8px; color: #888;">${formatBytes(conn.bytes || 0)}</td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Update visualizations with real connection data
+            _realConnections = connections;
+            rebuildTopology(connections);
+        });
+
+        // Top talkers update
+        socket.on('top_talkers_update', function(talkers) {
+            if (talkers) updateTopTalkers(talkers);
+        });
+
+        // Security alerts update
+        socket.on('alerts_update', function(alerts) {
+            if (alerts) updateSecurityAlerts(alerts);
+        });
+
+        // System status update
+        socket.on('system_status_update', function(status) {
+            if (status) {
+                // Direct ID targeting — no ambiguous selectors
+                const el = (id) => document.getElementById(id);
+                if (el('statLastScan')) el('statLastScan').textContent = status.last_scan || 'Never';
+                if (el('statUptime')) el('statUptime').textContent = status.uptime || '0:00:00';
+                if (el('statAttackSurface')) el('statAttackSurface').textContent = status.attack_surface || '0';
+                
+                // Update alert box
+                const alertBox = el('systemAlertBox');
+                if (alertBox) {
+                    const surface = status.attack_surface || 0;
+                    const icon = surface > 20 ? '⚠' : '✓';
+                    const msg = (status.hostname || '') + ' — ' + (status.kernel || '') + ' | ' + surface + ' listening ports';
+                    alertBox.innerHTML = '<div class="alert-icon" style="color:' + (surface > 20 ? '#ffaa00' : '#00ff41') + ';">' + icon + '</div><div>' + msg + '</div>';
+                }
+            }
+        });
+
+        // Sessions/compromised/killchain update
+        socket.on('sessions_update', function(data) {
+            if (data.sessions) updateActiveExploits(data.sessions);
+            if (data.compromised) updateCompromisedHosts(data.compromised);
+            if (data.killchain && data.killchain.phases) updateKillchainProgress(data.killchain.phases);
+        });
+
+        // Scan results
+        socket.on('scan_started', function(data) {
+            addTerminalLine(`[*] ${data.message || 'Scan started...'}`, 'output');
+        });
+
+        socket.on('scan_complete', function(results) {
+            addTerminalLine('[+] Scan complete!', 'output');
+            if (results.error) {
+                addTerminalLine(`[!] Error: ${results.error}`, 'error');
+                return;
+            }
+            if (results.hosts) {
+                addTerminalLine(`[+] Found ${results.hosts.length} host(s)`, 'output');
+                results.hosts.forEach(host => {
+                    addTerminalLine(`  Host: ${host.ip} — ${host.state}${host.hostname !== 'Unknown' ? ' (' + host.hostname + ')' : ''}`, 'output');
+                    if (host.ports && host.ports.length > 0) {
+                        host.ports.forEach(port => {
+                            addTerminalLine(`    ${port.port}/${port.protocol}: ${port.state} (${port.service}${port.version ? ' ' + port.version : ''})`, 'output');
+                        });
+                    }
+                });
+            }
+        });
+
+        // Command output from backend
+        socket.on('command_output', function(result) {
+            if (result.clear) {
+                const lines = fullTerminal.querySelectorAll('.terminal-line:not(.terminal-input-line)');
+                lines.forEach(line => line.remove());
+                return;
+            }
+
+            const lines = result.output.split('\n');
+            lines.forEach(line => {
+                if (line.trim()) {
+                    const outputLine = document.createElement('div');
+                    outputLine.className = 'terminal-line';
+                    outputLine.innerHTML = `<span class="terminal-${result.error ? 'error' : 'output'}">${line}</span>`;
+                    const inputLine = fullTerminal.querySelector('.terminal-input-line');
+                    fullTerminal.insertBefore(outputLine, inputLine);
+                }
+            });
+            fullTerminal.scrollTop = fullTerminal.scrollHeight;
+        });
+
+        // Helper function to format bytes
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Override terminal to always use backend
+        const terminalInputWS = document.getElementById('terminalInput');
+        if (terminalInputWS) {
+            // Remove any prior listeners by replacing element
+            const newInput = terminalInputWS.cloneNode(true);
+            terminalInputWS.parentNode.replaceChild(newInput, terminalInputWS);
+            
+            newInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const command = this.value.trim();
+                    if (command) {
+                        // Add command to terminal display
+                        const line = document.createElement('div');
+                        line.className = 'terminal-line';
+                        line.innerHTML = `<span class="terminal-prompt">root@reaper9000:~#</span> <span style="color: #fff;">${command}</span>`;
+                        const inputLine = fullTerminal.querySelector('.terminal-input-line');
+                        fullTerminal.insertBefore(line, inputLine);
+
+                        // Handle clear locally
+                        if (command === 'clear') {
+                            const lines = fullTerminal.querySelectorAll('.terminal-line:not(.terminal-input-line)');
+                            lines.forEach(l => l.remove());
+                        } else {
+                            // Send to backend for real execution
+                            socket.emit('execute_command', { command: command });
+                        }
+
+                        this.value = '';
+                        fullTerminal.scrollTop = fullTerminal.scrollHeight;
+                    }
+                }
+            });
+        }
+
+        // Request initial data from backend
+        socket.emit('request_metrics');
+        socket.emit('request_connections');
+        socket.emit('request_top_talkers');
+        socket.emit('request_alerts');
+        socket.emit('request_system_status');
+        socket.emit('request_sessions');
+
+        // Periodic updates
+        setInterval(() => {
+            socket.emit('request_metrics');
+            socket.emit('request_connections');
+            socket.emit('request_top_talkers');
+        }, 3000);
+
+        setInterval(() => {
+            socket.emit('request_alerts');
+            socket.emit('request_system_status');
+            socket.emit('request_sessions');
+        }, 10000);
+    </script>
+</body>
+</html>

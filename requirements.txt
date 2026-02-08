@@ -1,0 +1,12 @@
+# MEGA REAPER 9000 v3.0.0 — Backend Dependencies
+
+# Web Framework & WebSocket
+Flask>=3.0.0
+Flask-SocketIO>=5.3.5
+Flask-CORS>=4.0.0
+
+# Network Scanning
+python-nmap>=0.7.1
+
+# System Monitoring
+psutil>=5.9.6

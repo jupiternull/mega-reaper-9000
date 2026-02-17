@@ -7,6 +7,10 @@ A network monitoring and security testing platform with live system metrics, con
 ![Python](https://img.shields.io/badge/Python-3.10+-blue) ![Flask](https://img.shields.io/badge/Flask-3.0+-green) ![License](https://img.shields.io/badge/License-Educational-red)
 
 ---
+<img width="1912" height="930" alt="Screenshot from 2026-02-16 22-25-03" src="https://github.com/user-attachments/assets/ef27e941-6996-4838-8bc6-7f536a275dd0" />
+<img width="1912" height="912" alt="Screenshot from 2026-02-16 22-25-40" src="https://github.com/user-attachments/assets/52ade503-7f84-418d-8454-5f2ebb3869af" />
+<img width="1912" height="912" alt="Screenshot from 2026-02-16 22-26-01" src="https://github.com/user-attachments/assets/96b29a23-123a-4ad5-8cbb-50be58f2bc32" />
+<img width="1912" height="912" alt="Screenshot from 2026-02-16 22-26-21" src="https://github.com/user-attachments/assets/3fa86410-3f79-4176-9feb-3250fdd801e1" />
 
 
 ## Features

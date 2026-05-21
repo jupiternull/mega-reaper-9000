@@ -1,12 +1,29 @@
-# MEGA REAPER 9000 v3.0.0 — Backend Dependencies
+# MEGA REAPER 9000 v3.3.0 — Backend Dependencies
 
 # Web Framework & WebSocket
 Flask>=3.0.0
 Flask-SocketIO>=5.3.5
 Flask-CORS>=4.0.0
 
+# Auth
+Flask-Login>=0.6.3
+bcrypt>=3.2.2
+
+# Database
+Flask-SQLAlchemy>=3.1.1
+
+# Config
+python-dotenv>=1.2.0
+
 # Network Scanning
 python-nmap>=0.7.1
+scapy>=2.5.0
+
+# Metasploit RPC
+pymetasploit3>=1.0.6
 
 # System Monitoring
 psutil>=5.9.6
+
+# IoT / mDNS Discovery
+zeroconf>=0.39.0

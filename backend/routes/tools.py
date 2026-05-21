@@ -4,6 +4,7 @@ API endpoints for security scanning tools — REAL EXECUTION ONLY
 """
 
 from flask import Blueprint, jsonify, request
+from flask_login import login_required
 import subprocess
 import shlex
 import re
@@ -12,12 +13,15 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from services.network_scanner import NetworkScanner
+from services.nvd import enrich_vulnerabilities
+from services.geoip import lookup as geoip_lookup
 
 bp = Blueprint('tools', __name__, url_prefix='/api/tools')
 
 scanner = NetworkScanner()
 
 @bp.route('/nmap/scan', methods=['POST'])
+@login_required
 def nmap_scan():
     """Execute real nmap scan"""
     data = request.get_json()
@@ -30,6 +34,7 @@ def nmap_scan():
     return jsonify(results)
 
 @bp.route('/portscan', methods=['POST'])
+@login_required
 def port_scan():
     """Execute real port scan"""
     data = request.get_json()
@@ -42,6 +47,7 @@ def port_scan():
     return jsonify(results)
 
 @bp.route('/vulnscan', methods=['POST'])
+@login_required
 def vuln_scan():
     """Execute real vulnerability scan using nmap NSE scripts"""
     data = request.get_json()
@@ -103,11 +109,24 @@ def vuln_scan():
                     'exploit_available': False
                 })
         
+        # Enrich CVEs with real NVD CVSS scores
+        enriched = enrich_vulnerabilities(vulnerabilities)
+
+        # GeoIP on the target if it's an IP
+        geo = None
+        try:
+            import socket as _socket
+            _socket.inet_aton(target)
+            geo = geoip_lookup(target)
+        except Exception:
+            pass
+
         return jsonify({
             'target': target,
             'raw_output': result.stdout[-2000:] if result.stdout else result.stderr[-2000:],
-            'vulnerabilities': vulnerabilities,
-            'scan_complete': True
+            'vulnerabilities': enriched,
+            'scan_complete': True,
+            'geo': geo,
         })
         
     except subprocess.TimeoutExpired:
@@ -133,6 +152,7 @@ def vuln_scan():
         })
 
 @bp.route('/dns', methods=['POST'])
+@login_required
 def dns_enum():
     """Execute real DNS enumeration"""
     data = request.get_json()
@@ -183,6 +203,7 @@ def dns_enum():
     return jsonify(results)
 
 @bp.route('/webscan', methods=['POST'])
+@login_required
 def web_scan():
     """Execute real web scan using nikto or curl-based checks"""
     data = request.get_json()

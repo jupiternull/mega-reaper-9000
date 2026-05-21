@@ -34,6 +34,9 @@ captures/
 # Environment variables
 .env
 
+# Database / persistent data
+data/
+
 # Temporary files
 *.tmp
 temp/

@@ -813,6 +813,12 @@
                         <span class="stat-label">ATTACK SURFACE</span>
                         <span class="stat-value" id="statAttackSurface">0</span>
                     </div>
+                    <div style="margin-top: 15px;">
+                        <div style="color: #00ccff; font-size: 0.85em; margin-bottom: 8px; border-bottom: 1px solid rgba(0,255,65,0.3); padding-bottom: 4px;">LOCAL EXPOSURE</div>
+                        <div id="localExposure" style="max-height: 140px; overflow-y: auto; font-size: 0.78em;">
+                            <div style="color: #555;">Loading ports...</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -890,6 +896,14 @@
                     <div class="tool-title">REPORT GEN</div>
                     <div class="tool-description">Generate assessment reports</div>
                     <button class="btn" style="width: 100%;" onclick="openTool('report')">LAUNCH</button>
+                </div>
+
+                <!-- IoT Scanner -->
+                <div class="tool-card">
+                    <div class="tool-icon"><i class="fa-solid fa-house-signal"></i></div>
+                    <div class="tool-title">IoT SCANNER</div>
+                    <div class="tool-description">Discover and fingerprint IoT devices on the LAN via ARP, port probe &amp; mDNS</div>
+                    <button class="btn" style="width: 100%;" onclick="openTool('iotscan')">LAUNCH</button>
                 </div>
             </div>
         </div>
@@ -1000,47 +1014,36 @@
             }
         }
 
-        function rebuildTopology(connections) {
+        // Topology shows LAN neighbors from ARP table (populated via lan_topology_update)
+        function rebuildTopology(devices) {
             _topoNodes = [];
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
-            
+
             const gateway = new Node(centerX, centerY, 'LOCAL');
             gateway.color = '#00ff41';
             _topoNodes.push(gateway);
-            
-            // Extract unique remote IPs with device info
-            const uniqueHosts = {};
-            (connections || []).forEach(c => {
-                if (c.state === 'ESTABLISHED' && c.remote_addr && c.remote_addr !== 'N/A') {
-                    const ip = c.remote_addr.split(':')[0];
-                    if (ip && ip !== '127.0.0.1' && ip !== '0.0.0.0' && !uniqueHosts[ip]) {
-                        uniqueHosts[ip] = c.device || {};
-                    }
-                }
-            });
-            
-            const entries = Object.entries(uniqueHosts).slice(0, 12);
+
+            if (!devices || devices.length === 0) return;
+
+            const entries = devices.slice(0, 14);
             const radius = Math.min(canvas.width, canvas.height) * 0.35;
-            
-            // Device type color map
+
             const typeColors = {
                 'phone': '#ff0055', 'tablet': '#ff6600', 'laptop': '#00ccff',
                 'desktop': '#00ccff', 'computer': '#00ccff', 'router': '#ffaa00',
                 'server': '#ff00ff', 'media': '#ff6600', 'gaming': '#ff0055',
                 'smart-home': '#ffaa00', 'speaker': '#ff6600', 'iot': '#ffcc00',
-                'camera': '#ff0055', 'network': '#ffaa00'
+                'camera': '#ff0055', 'network': '#ffaa00', 'printer': '#00ccff',
+                'unknown': '#00ff41',
             };
-            
-            entries.forEach(([ip, dev], i) => {
+
+            entries.forEach((dev, i) => {
                 const angle = (i / Math.max(entries.length, 1)) * Math.PI * 2;
                 const x = centerX + Math.cos(angle) * radius;
                 const y = centerY + Math.sin(angle) * radius;
-                
-                // Use friendly name or short IP
-                let label = dev.friendly_name || dev.manufacturer || ip;
+                let label = dev.friendly_name || dev.manufacturer || dev.ip || '';
                 if (label.length > 18) label = label.substring(0, 15) + '...';
-                
                 const node = new Node(x, y, label);
                 node.color = typeColors[dev.device_type] || '#00ff41';
                 _topoNodes.push(node);
@@ -1048,7 +1051,7 @@
             });
         }
 
-        // Initial empty topology
+        // Initial empty topology — populated on lan_topology_update
         rebuildTopology([]);
 
         function drawConnections() {
@@ -1863,6 +1866,32 @@
                         </div>
                         <div class="scan-results" id="reportResults" style="display:none;"></div>
                     `
+                },
+                'iotscan': {
+                    title: 'IoT DEVICE SCANNER',
+                    form: `
+                        <div class="form-group">
+                            <label class="form-label">Subnet (optional — auto-detects if blank)</label>
+                            <input type="text" class="form-input" placeholder="e.g. 192.168.1.0/24" id="iotSubnet">
+                        </div>
+                        <div style="font-size: 0.8em; color: #888; margin-bottom: 12px;">
+                            Scans ARP table + probes IoT ports (RTSP, MQTT, Telnet, CoAP, IPP…) + mDNS/Bonjour discovery.
+                            Scan takes 30–90 seconds depending on network size.
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn" id="iotScanBtn" onclick="runIoTScan()">START SCAN</button>
+                        </div>
+                        <div id="iotProgress" style="display:none; margin-top: 12px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #00ccff; margin-bottom: 4px;">
+                                <span id="iotProgressMsg">Initializing...</span>
+                                <span id="iotProgressPct">0%</span>
+                            </div>
+                            <div class="progress-bar" style="height: 10px;">
+                                <div class="progress-fill" id="iotProgressBar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        <div class="scan-results" id="iotResults" style="display:none; margin-top: 12px;"></div>
+                    `
                 }
             };
 
@@ -1876,6 +1905,17 @@
 
         function closeModal() {
             document.getElementById('toolModal').classList.remove('active');
+        }
+
+        function runIoTScan() {
+            const subnet = document.getElementById('iotSubnet')?.value.trim() || null;
+            const btn = document.getElementById('iotScanBtn');
+            const progress = document.getElementById('iotProgress');
+            const results = document.getElementById('iotResults');
+            if (btn) btn.disabled = true;
+            if (progress) progress.style.display = 'block';
+            if (results) { results.style.display = 'none'; results.innerHTML = ''; }
+            socket.emit('run_iot_scan', subnet ? { subnet } : {});
         }
 
         // Real Scan Functions — all call the backend API
@@ -2245,9 +2285,8 @@
                 `;
             }).join('');
             
-            // Update visualizations with real connection data
+            // Connection map uses external connections; topology uses LAN (lan_topology_update)
             _realConnections = connections;
-            rebuildTopology(connections);
         });
 
         // Top talkers update
@@ -2375,6 +2414,98 @@
             });
         }
 
+        // LAN topology — drives network topology canvas
+        socket.on('lan_topology_update', function(devices) {
+            rebuildTopology(devices || []);
+        });
+
+        // Local exposure — listening ports list in System Status panel
+        socket.on('local_exposure_update', function(ports) {
+            const el = document.getElementById('localExposure');
+            if (!el) return;
+            if (!ports || ports.length === 0) {
+                el.innerHTML = '<div style="color: #555; padding: 4px;">No listening ports detected</div>';
+                return;
+            }
+            el.innerHTML = ports.map(p => `
+                <div style="display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid rgba(0,255,65,0.08);">
+                    <span style="color:${p.suspicious ? '#ff0055' : '#00ccff'}; min-width:50px;">:${p.port}</span>
+                    <span style="color:#888; flex:1; margin:0 8px;">${p.service}</span>
+                    <span style="color:#555; font-size:0.9em;">${p.interface}</span>
+                </div>
+            `).join('');
+        });
+
+        // IoT scan progress
+        socket.on('iot_scan_progress', function(data) {
+            const msg = document.getElementById('iotProgressMsg');
+            const pct = document.getElementById('iotProgressPct');
+            const bar = document.getElementById('iotProgressBar');
+            if (msg) msg.textContent = data.message || '';
+            if (pct) pct.textContent = (data.percent || 0) + '%';
+            if (bar) bar.style.width = (data.percent || 0) + '%';
+        });
+
+        // IoT scan complete
+        socket.on('iot_scan_result', function(data) {
+            const btn = document.getElementById('iotScanBtn');
+            const progress = document.getElementById('iotProgress');
+            const results = document.getElementById('iotResults');
+            if (btn) btn.disabled = false;
+            if (progress) progress.style.display = 'none';
+            if (!results) return;
+            results.style.display = 'block';
+
+            const devices = data.devices || [];
+            if (devices.length === 0) {
+                results.innerHTML = '<div style="color:#888; padding:10px;">No devices found.</div>';
+                return;
+            }
+
+            const iotOnly = devices.filter(d => d.is_iot);
+            results.innerHTML = `<div style="color:#00ccff; margin-bottom:8px; font-size:0.85em;">[+] ${devices.length} hosts found — ${iotOnly.length} IoT/smart devices</div>` +
+                devices.map(dev => {
+                    const portBadges = (dev.services || []).map(s =>
+                        `<span style="background:rgba(0,204,255,0.1); border:1px solid rgba(0,204,255,0.3); padding:1px 6px; margin:2px; font-size:0.8em; display:inline-block;">${s.port}/${s.name}</span>`
+                    ).join('');
+                    const iotBadge = dev.is_iot
+                        ? `<span style="color:#ffcc00; font-size:0.75em; margin-left:6px;">IoT</span>` : '';
+                    const mdnsBadge = dev.mdns_name
+                        ? `<span style="color:#00ff41; font-size:0.75em; margin-left:6px;">[mDNS: ${dev.mdns_name}]</span>` : '';
+                    return `
+                        <div class="result-item" style="margin:6px 0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <i class="fa-solid ${dev.icon || 'fa-microchip'}" style="color:#00ccff; margin-right:6px;"></i>
+                                    <strong style="color:#00ccff;">${dev.ip}</strong>
+                                    ${iotBadge}${mdnsBadge}
+                                </div>
+                                <span style="color:#888; font-size:0.8em;">${dev.mac || ''}</span>
+                            </div>
+                            <div style="color:#888; font-size:0.85em; margin-top:3px;">
+                                ${dev.label || dev.friendly_name || 'Unknown'}
+                                ${dev.manufacturer ? ' — ' + dev.manufacturer : ''}
+                                ${dev.hostname && dev.hostname !== dev.ip ? ' (' + dev.hostname + ')' : ''}
+                            </div>
+                            <div style="margin-top:5px;">${portBadges || '<span style="color:#555; font-size:0.8em;">No IoT ports open</span>'}</div>
+                        </div>
+                    `;
+                }).join('');
+
+            // Refresh topology with IoT-enriched data
+            rebuildTopology(devices);
+        });
+
+        socket.on('iot_scan_error', function(data) {
+            const btn = document.getElementById('iotScanBtn');
+            const results = document.getElementById('iotResults');
+            if (btn) btn.disabled = false;
+            if (results) {
+                results.style.display = 'block';
+                results.innerHTML = `<div style="color:#ff0055;">[!] ${data.error || 'Scan failed'}</div>`;
+            }
+        });
+
         // Request initial data from backend
         socket.emit('request_metrics');
         socket.emit('request_connections');
@@ -2382,6 +2513,8 @@
         socket.emit('request_alerts');
         socket.emit('request_system_status');
         socket.emit('request_sessions');
+        socket.emit('request_lan_topology');
+        socket.emit('request_local_exposure');
 
         // Periodic updates
         setInterval(() => {

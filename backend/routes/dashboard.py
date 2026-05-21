@@ -4,6 +4,7 @@ API endpoints for dashboard functionality — REAL DATA ONLY
 """
 
 from flask import Blueprint, jsonify, request
+from flask_login import login_required
 import psutil
 import time
 import subprocess
@@ -14,6 +15,7 @@ from datetime import datetime
 bp = Blueprint('dashboard', __name__, url_prefix='/api/dashboard')
 
 @bp.route('/status', methods=['GET'])
+@login_required
 def get_status():
     """Get real system status"""
     boot_time = datetime.fromtimestamp(psutil.boot_time())
@@ -32,6 +34,7 @@ def get_status():
     })
 
 @bp.route('/alerts', methods=['GET'])
+@login_required
 def get_alerts():
     """Get real security-relevant events from system logs and live state"""
     alerts = []
@@ -155,6 +158,7 @@ def get_alerts():
 
 
 @bp.route('/system-status', methods=['GET'])
+@login_required
 def get_system_status():
     """Get real system status details"""
     uptime_seconds = int(time.time() - psutil.boot_time())

@@ -9,12 +9,17 @@ import socket
 from collections import defaultdict
 from datetime import datetime
 
-# Import DeviceIdentifier for enriching connections with device info
 try:
     from services.device_identifier import DeviceIdentifier
     _device_id = DeviceIdentifier()
 except ImportError:
     _device_id = None
+
+try:
+    from services.geoip import lookup as geoip_lookup, lookup_batch as geoip_batch
+except ImportError:
+    geoip_lookup = None
+    geoip_batch = None
 
 class NetworkScanner:
     def __init__(self):
@@ -102,77 +107,104 @@ class NetworkScanner:
                 'timestamp': datetime.now().isoformat()
             }
     
+    @staticmethod
+    def _is_external_ip(ip):
+        """Return True only for routable public IPs worth showing on the dashboard."""
+        if not ip or ip in ('0.0.0.0', '::', '127.0.0.1', '::1'):
+            return False
+        # RFC-1918 private ranges, link-local, loopback
+        private_prefixes = (
+            '10.', '172.16.', '172.17.', '172.18.', '172.19.',
+            '172.20.', '172.21.', '172.22.', '172.23.', '172.24.',
+            '172.25.', '172.26.', '172.27.', '172.28.', '172.29.',
+            '172.30.', '172.31.',
+            '192.168.', '169.254.', 'fe80:',
+        )
+        return not any(ip.startswith(p) for p in private_prefixes)
+
     def get_active_connections(self):
-        """Get currently active network connections"""
-        
+        """Return only external ESTABLISHED connections — no LISTEN, no loopback/LAN."""
         try:
             connections = psutil.net_connections(kind='inet')
             active_conns = []
-            
+
             for conn in connections:
-                if conn.status == 'ESTABLISHED' or conn.status == 'LISTEN':
-                    conn_info = {
-                        'protocol': 'TCP' if conn.type == socket.SOCK_STREAM else 'UDP',
-                        'local_addr': f"{conn.laddr.ip}:{conn.laddr.port}" if conn.laddr else 'N/A',
-                        'remote_addr': f"{conn.raddr.ip}:{conn.raddr.port}" if conn.raddr else 'N/A',
-                        'state': conn.status,
-                        'pid': conn.pid
+                if conn.status != 'ESTABLISHED':
+                    continue
+                if not conn.raddr or not conn.raddr.ip:
+                    continue
+                if not self._is_external_ip(conn.raddr.ip):
+                    continue
+
+                conn_info = {
+                    'protocol': 'TCP' if conn.type == socket.SOCK_STREAM else 'UDP',
+                    'local_addr': f"{conn.laddr.ip}:{conn.laddr.port}" if conn.laddr else 'N/A',
+                    'remote_addr': f"{conn.raddr.ip}:{conn.raddr.port}",
+                    'state': conn.status,
+                    'pid': conn.pid,
+                }
+
+                try:
+                    dev_info = self.device_identifier.identify(conn.raddr.ip)
+                    conn_info['device'] = {
+                        'manufacturer': dev_info.get('manufacturer'),
+                        'hostname': dev_info.get('hostname'),
+                        'device_type': dev_info.get('device_type'),
+                        'icon': dev_info.get('icon'),
+                        'friendly_name': dev_info.get('friendly_name'),
+                        'mac': dev_info.get('mac'),
                     }
-                    
-                    # Enrich with device identification
-                    if conn.raddr and conn.raddr.ip:
-                        try:
-                            dev_info = self.device_identifier.identify(conn.raddr.ip)
-                            conn_info['device'] = {
-                                'manufacturer': dev_info.get('manufacturer'),
-                                'hostname': dev_info.get('hostname'),
-                                'device_type': dev_info.get('device_type'),
-                                'icon': dev_info.get('icon'),
-                                'friendly_name': dev_info.get('friendly_name'),
-                                'mac': dev_info.get('mac')
-                            }
-                        except Exception:
-                            conn_info['device'] = None
-                    
-                    # Estimate bytes transferred (simplified)
-                    conn_key = f"{conn_info['local_addr']}->{conn_info['remote_addr']}"
-                    conn_info['bytes'] = self.connection_stats[conn_key]['bytes']
-                    
-                    active_conns.append(conn_info)
-            
-            return active_conns[:20]  # Limit to top 20
-            
+                except Exception:
+                    conn_info['device'] = None
+
+                try:
+                    if geoip_lookup:
+                        conn_info['geo'] = geoip_lookup(conn.raddr.ip)
+                except Exception:
+                    conn_info['geo'] = None
+
+                conn_key = f"{conn_info['local_addr']}->{conn_info['remote_addr']}"
+                conn_info['bytes'] = self.connection_stats[conn_key]['bytes']
+
+                active_conns.append(conn_info)
+
+            return active_conns[:20]
+
         except Exception as e:
             print(f"[!] Error getting connections: {e}")
             return []
     
     def get_top_talkers(self):
-        """Get hosts with highest connection count (real data from psutil)"""
-        
+        """Get external hosts with highest connection count (real data from psutil)."""
         try:
             connections = psutil.net_connections(kind='inet')
             host_stats = defaultdict(lambda: {'conn_count': 0, 'ports': set(), 'protocol': 'TCP'})
-            
-            # Aggregate by remote IP — count connections and unique ports
+
+            # Aggregate by remote IP — external ESTABLISHED only
             for conn in connections:
-                if conn.raddr and conn.raddr.ip:
-                    ip = conn.raddr.ip
-                    host_stats[ip]['conn_count'] += 1
-                    host_stats[ip]['ports'].add(conn.raddr.port)
-                    
-                    if conn.type == socket.SOCK_STREAM:
-                        if conn.raddr.port == 443:
-                            host_stats[ip]['protocol'] = 'HTTPS'
-                        elif conn.raddr.port == 80:
-                            host_stats[ip]['protocol'] = 'HTTP'
-                        elif conn.raddr.port == 22:
-                            host_stats[ip]['protocol'] = 'SSH'
-                        elif conn.raddr.port == 53:
-                            host_stats[ip]['protocol'] = 'DNS'
-                        else:
-                            host_stats[ip]['protocol'] = 'TCP'
+                if conn.status != 'ESTABLISHED':
+                    continue
+                if not conn.raddr or not conn.raddr.ip:
+                    continue
+                if not self._is_external_ip(conn.raddr.ip):
+                    continue
+                ip = conn.raddr.ip
+                host_stats[ip]['conn_count'] += 1
+                host_stats[ip]['ports'].add(conn.raddr.port)
+
+                if conn.type == socket.SOCK_STREAM:
+                    if conn.raddr.port == 443:
+                        host_stats[ip]['protocol'] = 'HTTPS'
+                    elif conn.raddr.port == 80:
+                        host_stats[ip]['protocol'] = 'HTTP'
+                    elif conn.raddr.port == 22:
+                        host_stats[ip]['protocol'] = 'SSH'
+                    elif conn.raddr.port == 53:
+                        host_stats[ip]['protocol'] = 'DNS'
                     else:
-                        host_stats[ip]['protocol'] = 'UDP'
+                        host_stats[ip]['protocol'] = 'TCP'
+                else:
+                    host_stats[ip]['protocol'] = 'UDP'
             
             # Get total network I/O for proportional estimation
             net_io = psutil.net_io_counters()
@@ -201,6 +233,13 @@ class NetworkScanner:
                 # Proportional estimate of bytes/packets based on connection share
                 share = stats['conn_count'] / total_conns
                 
+                geo = {}
+                try:
+                    if geoip_lookup:
+                        geo = geoip_lookup(ip) or {}
+                except Exception:
+                    pass
+
                 top_talkers.append({
                     'ip': ip,
                     'hostname': hostname,
@@ -214,7 +253,8 @@ class NetworkScanner:
                         'icon': dev_info.get('icon'),
                         'friendly_name': dev_info.get('friendly_name'),
                         'mac': dev_info.get('mac')
-                    }
+                    },
+                    'geo': geo,
                 })
             
             return top_talkers

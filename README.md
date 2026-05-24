@@ -2,7 +2,7 @@
 
 **Real-Time Security Operations Dashboard**
 
-A network monitoring and security testing platform with live system metrics, LAN topology, GeoIP enrichment, Metasploit RPC integration, IoT device discovery, and integrated offensive security tools. All data is live — zero simulated values.
+A network monitoring and security testing platform with live system metrics, LAN topology, GeoIP enrichment, Metasploit RPC integration, IoT device discovery, and integrated offensive security tools.
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue) ![Flask](https://img.shields.io/badge/Flask-3.0+-green) ![License](https://img.shields.io/badge/License-Educational-red)
 

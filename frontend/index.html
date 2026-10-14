@@ -710,16 +710,19 @@
             el.innerHTML = alerts.map(a => {
                 const cls = sevClass(a.severity);
                 const icon = iconMap[a.type] || 'fa-circle-info';
+                const rawType = a.type || 'Event';
+                const title = rawType.charAt(0).toUpperCase() + rawType.slice(1);
+                const when = a.time || a.timestamp || '';
                 return `
                     <div class="result-item ${cls}" style="margin:6px 0;">
                         <div style="display:flex; justify-content:space-between; align-items:start;">
                             <div style="flex:1;">
                                 <i class="fa-solid ${icon}" style="color:var(--${cls === 'info' ? 'low' : cls}); margin-right:8px;"></i>
-                                <strong>${a.type}</strong>
-                                <span style="color:var(--text-faint); font-size:0.8em; margin-left:8px;">[${a.source}]</span>
+                                <strong>${title}</strong>
+                                ${a.source ? `<span style="color:var(--text-faint); font-size:0.8em; margin-left:8px;">[${a.source}]</span>` : ''}
                                 <div style="margin-top:4px; color:var(--text-dim); font-size:0.88em;">${a.message}</div>
                             </div>
-                            <span class="mono" style="color:var(--text-faint); font-size:0.78em; white-space:nowrap; margin-left:10px;">${a.time}</span>
+                            ${when ? `<span class="mono" style="color:var(--text-faint); font-size:0.78em; white-space:nowrap; margin-left:10px;">${when}</span>` : ''}
                         </div>
                     </div>`;
             }).join('');

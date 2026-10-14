@@ -7,10 +7,21 @@ A network monitoring and security testing platform with live system metrics, LAN
 ![Python](https://img.shields.io/badge/Python-3.10+-blue) ![Flask](https://img.shields.io/badge/Flask-3.0+-green) ![License](https://img.shields.io/badge/License-Educational-red)
 
 ---
-<img width="1912" height="930" alt="Screenshot from 2026-02-16 22-25-03" src="https://github.com/user-attachments/assets/ef27e941-6996-4838-8bc6-7f536a275dd0" />
-<img width="1912" height="912" alt="Screenshot from 2026-02-16 22-25-40" src="https://github.com/user-attachments/assets/52ade503-7f84-418d-8454-5f2ebb3869af" />
-<img width="1912" height="912" alt="Screenshot from 2026-02-16 22-26-01" src="https://github.com/user-attachments/assets/96b29a23-123a-4ad5-8cbb-50be58f2bc32" />
-<img width="1912" height="912" alt="Screenshot from 2026-02-16 22-26-21" src="https://github.com/user-attachments/assets/3fa86410-3f79-4176-9feb-3250fdd801e1" />
+**Dashboard** — live metrics, network topology, connections, top talkers, attack operations, alerts and local exposure:
+
+![Dashboard](docs/screenshots/dashboard.png)
+
+**Tools** — the full toolset, grouped by category:
+
+![Tools](docs/screenshots/tools.png)
+
+**Tool in action** — the TLS / Certificate Inspector:
+
+![TLS / Certificate Inspector](docs/screenshots/tls-inspector.png)
+
+**Sign in** — single-operator authentication:
+
+![Login](docs/screenshots/login.png)
 
 
 ## Features
@@ -85,8 +96,10 @@ A network monitoring and security testing platform with live system metrics, LAN
 ### System Tools
 
 ```bash
-sudo apt install nmap dnsutils tcpdump nikto hydra
+sudo apt install nmap dnsutils tcpdump nikto hydra whois openssl
 ```
+
+`whois` powers the WHOIS tool and `openssl` is used as a certificate-parsing fallback by the TLS inspector — both degrade gracefully if missing. The HTTP header analyzer, CVE search, IP intelligence, hash toolkit and the in-browser encoder/decoder require no extra system packages.
 
 ### Metasploit (optional)
 

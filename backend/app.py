@@ -569,12 +569,12 @@ def background_alerts_update():
 
 if __name__ == '__main__':
     print("""
-    ╔═╗ ╔═╗╔═╗╔═╗  ╔═╗╔═╗╔═╗╔═╗╔═╗╔═╗  ╔═╗╔═╗╔═╗╔═╗
-    ║║║ ║╣ ║ ╦╠═╣  ╠╦╝║╣ ╠═╣╠═╝║╣ ╠╦╝  ║ ║║ ║║ ║║ ║
-    ╩ ╩ ╚═╝╚═╝╩ ╩  ╩╚═╚═╝╩ ╩╩  ╚═╝╩╚═  ╚═╝╚═╝╚═╝╚═╝
-
-    MEGA REAPER 9000 - Security Operations Center v3.1.0
-    Starting server on http://0.0.0.0:5000
+    ============================================================
+      MEGA REAPER 9000  -  Security Operations Center  v3.4.0
+    ------------------------------------------------------------
+      Dashboard : http://0.0.0.0:5000
+      For authorized, educational and self-assessment use only.
+    ============================================================
     """)
     socketio.start_background_task(background_metrics_update)
     socketio.start_background_task(background_alerts_update)

@@ -26,7 +26,7 @@ def get_status():
     return jsonify({
         'status': 'online',
         'message': 'MEGA REAPER 9000 operational',
-        'version': '3.0.0',
+        'version': '3.4.0',
         'hostname': os.uname().nodename,
         'uptime': f'{h}:{m:02d}:{s:02d}',
         'boot_time': boot_time.isoformat(),

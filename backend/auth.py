@@ -85,109 +85,93 @@ def auth_status():
     return jsonify({'authenticated': current_user.is_authenticated})
 
 
-# ── Minimal login page (themed to match dashboard) ───────────────────
+# ── Login page (themed to match the dashboard design system) ─────────
 LOGIN_HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MEGA REAPER 9000 — AUTH</title>
+<title>MEGA REAPER 9000 - Sign In</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%234f8cff'/%3E%3Cpath d='M12 4l6 2v5c0 4-2.7 6.7-6 8-3.3-1.3-6-4-6-8V6z' fill='white'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --bg: #0b0e14; --surface: #121722; --surface-2: #1a2130; --border: #273142;
+    --text: #e6edf6; --text-dim: #93a1b5; --text-faint: #5d6b82;
+    --accent: #4f8cff; --accent-hover: #6ea0ff; --accent-soft: rgba(79,140,255,0.12); --violet: #a78bfa; --critical: #f0506a;
+  }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: #0a0e1a;
-    color: #00ff41;
-    font-family: 'Share Tech Mono', monospace;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    overflow: hidden;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(79,140,255,0.08), transparent 60%),
+      radial-gradient(900px 500px at 0% 110%, rgba(167,139,250,0.06), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px;
+    -webkit-font-smoothing: antialiased;
   }
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.03) 2px, rgba(0,255,65,0.03) 4px);
-    pointer-events: none;
-    z-index: 0;
+  .card {
+    width: 400px; max-width: 100%;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 36px 34px; box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 20px 50px rgba(0,0,0,0.4);
   }
-  .container {
-    position: relative;
-    z-index: 1;
-    width: 420px;
-    border: 1px solid rgba(0,255,65,0.3);
-    background: rgba(10,14,26,0.95);
-    padding: 40px;
-    box-shadow: 0 0 40px rgba(0,255,65,0.1), inset 0 0 40px rgba(0,255,65,0.02);
+  .brand { display: flex; align-items: center; gap: 13px; margin-bottom: 28px; }
+  .brand-mark {
+    width: 46px; height: 46px; display: grid; place-items: center; border-radius: 11px;
+    background: linear-gradient(135deg, var(--accent), var(--violet)); color: #fff; font-size: 1.3em;
+    box-shadow: 0 6px 16px rgba(79,140,255,0.35);
   }
-  .header { text-align: center; margin-bottom: 36px; }
-  .header h1 { font-size: 1.1em; letter-spacing: 0.2em; color: #00ff41; text-shadow: 0 0 10px rgba(0,255,65,0.5); }
-  .header .sub { font-size: 0.7em; color: #444; letter-spacing: 0.15em; margin-top: 6px; }
-  .divider { border: none; border-top: 1px solid rgba(0,255,65,0.15); margin: 0 0 28px; }
-  label { display: block; font-size: 0.7em; letter-spacing: 0.15em; color: #555; margin-bottom: 6px; }
+  .brand h1 { font-size: 1.05em; font-weight: 700; letter-spacing: 0.3px; }
+  .brand .sub { font-size: 0.68em; color: var(--text-faint); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500; margin-top: 2px; }
+  .heading { font-size: 1.15em; font-weight: 600; margin-bottom: 4px; }
+  .heading + p { color: var(--text-dim); font-size: 0.85em; margin-bottom: 24px; }
+  label { display: block; font-size: 0.78em; font-weight: 500; color: var(--text-dim); margin-bottom: 7px; }
   input {
-    width: 100%;
-    background: rgba(0,0,0,0.5);
-    border: 1px solid rgba(0,255,65,0.2);
-    color: #00ff41;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.9em;
-    padding: 10px 12px;
-    margin-bottom: 20px;
-    outline: none;
-    transition: border-color 0.2s;
+    width: 100%; background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+    font-family: inherit; font-size: 0.92em; padding: 11px 13px; margin-bottom: 18px; border-radius: 8px;
+    outline: none; transition: all 0.15s;
   }
-  input:focus { border-color: rgba(0,255,65,0.6); box-shadow: 0 0 8px rgba(0,255,65,0.15); }
+  input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
   button {
-    width: 100%;
-    background: transparent;
-    border: 1px solid rgba(0,255,65,0.5);
-    color: #00ff41;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.85em;
-    letter-spacing: 0.15em;
-    padding: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
+    width: 100%; background: var(--accent); border: 1px solid var(--accent); color: #fff;
+    font-family: inherit; font-size: 0.9em; font-weight: 600; padding: 12px; cursor: pointer;
+    border-radius: 8px; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px;
   }
-  button:hover { background: rgba(0,255,65,0.08); box-shadow: 0 0 15px rgba(0,255,65,0.2); }
-  button:active { background: rgba(0,255,65,0.15); }
-  .error {
-    color: #ff4444;
-    font-size: 0.75em;
-    text-align: center;
-    margin-top: 14px;
-    min-height: 1.2em;
-    text-shadow: 0 0 8px rgba(255,68,68,0.4);
-  }
-  .cursor::after { content: '_'; animation: blink 1s step-end infinite; }
-  @keyframes blink { 50% { opacity: 0; } }
+  button:hover { background: var(--accent-hover); border-color: var(--accent-hover); box-shadow: 0 4px 16px rgba(79,140,255,0.35); }
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+  .error { color: var(--critical); font-size: 0.82em; text-align: center; margin-top: 16px; min-height: 1.2em; }
+  .foot { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 0.74em; color: var(--text-faint); text-align: center; line-height: 1.5; }
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <h1>MEGA REAPER 9000</h1>
-    <div class="sub">SECURITY OPERATIONS CENTER</div>
+<div class="card">
+  <div class="brand">
+    <div class="brand-mark"><i class="fa-solid fa-shield-halved"></i></div>
+    <div><h1>MEGA REAPER 9000</h1><div class="sub">Security Operations Center</div></div>
   </div>
-  <hr class="divider">
+  <div class="heading">Operator sign in</div>
+  <p>Authenticate to access the operations console.</p>
   <form id="loginForm" onsubmit="doLogin(event)">
-    <label>OPERATOR ID</label>
-    <input type="text" id="username" autocomplete="username" autofocus spellcheck="false">
-    <label>ACCESS CODE</label>
-    <input type="password" id="password" autocomplete="current-password">
-    <button type="submit">AUTHENTICATE<span class="cursor"></span></button>
+    <label for="username">Operator ID</label>
+    <input type="text" id="username" autocomplete="username" autofocus spellcheck="false" placeholder="admin">
+    <label for="password">Access code</label>
+    <input type="password" id="password" autocomplete="current-password" placeholder="password">
+    <button type="submit"><i class="fa-solid fa-right-to-bracket"></i> <span id="btnLabel">Sign in</span></button>
   </form>
   <div class="error" id="errMsg"></div>
+  <div class="foot"><i class="fa-solid fa-lock"></i> Authorized use only. All activity may be logged.</div>
 </div>
 <script>
   async function doLogin(e) {
     e.preventDefault();
     const btn = document.querySelector('button');
-    btn.textContent = 'AUTHENTICATING...';
+    const label = document.getElementById('btnLabel');
+    label.textContent = 'Signing in...';
     btn.disabled = true;
     document.getElementById('errMsg').textContent = '';
     try {
@@ -203,13 +187,13 @@ LOGIN_HTML = """<!DOCTYPE html>
         window.location.href = '/';
       } else {
         const d = await res.json();
-        document.getElementById('errMsg').textContent = '[ ' + (d.error || 'ACCESS DENIED') + ' ]';
-        btn.textContent = 'AUTHENTICATE _';
+        document.getElementById('errMsg').textContent = d.error || 'Access denied';
+        label.textContent = 'Sign in';
         btn.disabled = false;
       }
     } catch(err) {
-      document.getElementById('errMsg').textContent = '[ CONNECTION ERROR ]';
-      btn.textContent = 'AUTHENTICATE _';
+      document.getElementById('errMsg').textContent = 'Connection error';
+      label.textContent = 'Sign in';
       btn.disabled = false;
     }
   }

@@ -11,12 +11,12 @@ class CommandExecutor:
     def __init__(self):
         # Whitelist of allowed commands
         self.allowed_commands = [
-            'nmap', 'masscan', 'ping', 'traceroute', 'dig', 'nslookup',
+            'nmap', 'masscan', 'ping', 'traceroute', 'dig', 'nslookup', 'host',
             'netstat', 'ss', 'ifconfig', 'ip', 'route', 'arp',
-            'ls', 'pwd', 'whoami', 'uname', 'hostname', 'uptime',
+            'ls', 'pwd', 'whoami', 'id', 'uname', 'hostname', 'uptime', 'date',
             'ps', 'top', 'df', 'du', 'free', 'cat', 'head', 'tail',
-            'grep', 'awk', 'sed', 'curl', 'wget', 'whois',
-            'nikto', 'hydra', 'sqlmap', 'help', 'clear'
+            'grep', 'awk', 'sed', 'curl', 'wget', 'whois', 'openssl',
+            'nikto', 'hydra', 'sqlmap', 'searchsploit', 'help', 'clear'
         ]
         
         # Commands that return help/info

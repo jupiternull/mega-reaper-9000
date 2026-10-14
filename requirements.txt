@@ -1,4 +1,6 @@
-# MEGA REAPER 9000 v3.3.0 — Backend Dependencies
+# MEGA REAPER 9000 v3.4.0 — Backend Dependencies
+# (The recon/intel toolkit — TLS, HTTP headers, WHOIS, hash tools — uses only the
+#  Python standard library, so no new third-party packages are required.)
 
 # Web Framework & WebSocket
 Flask>=3.0.0

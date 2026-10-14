@@ -2,7 +2,7 @@
 
 **Real-Time Security Operations Dashboard**
 
-A network monitoring and security testing platform with live system metrics, LAN topology, GeoIP enrichment, Metasploit RPC integration, IoT device discovery, and integrated offensive security tools.
+A network monitoring and security testing platform with live system metrics, LAN topology, GeoIP enrichment, Metasploit RPC integration, IoT device discovery, integrated offensive security tools, and a recon & threat-intel toolkit (TLS inspection, HTTP header grading, WHOIS, CVE search and offline hash analysis). Presented through a clean, professional dark "slate" operations console.
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue) ![Flask](https://img.shields.io/badge/Flask-3.0+-green) ![License](https://img.shields.io/badge/License-Educational-red)
 
@@ -31,17 +31,35 @@ A network monitoring and security testing platform with live system metrics, LAN
 - Credentials stored in `.env` (never committed) — see `.env.example`
 - All API and WebSocket routes protected
 
-**GUI Security Tools**
+**Security Tools (grouped by category in the Tools view)**
+
+*Reconnaissance*
 - **Nmap Scanner** — network discovery with six scan profiles
 - **Port Scanner** — fast TCP/UDP enumeration
-- **Vulnerability Scanner** — `nmap --script vuln` with real CVSS scores from NVD API v2
-- **Packet Capture** — Scapy-based protocol decode (HTTP, DNS, MQTT, SSH, SMTP, MySQL, etc.)
-- **DNS Enumeration** — `dig` A/MX/NS/TXT lookups
-- **Web Scanner** — `nikto` or header analysis fallback
-- **Brute Force** — `hydra` authentication testing
-- **Exploit DB** — search and deploy Metasploit modules via RPC
+- **Host Discovery** — subnet ping-sweep (`nmap -sn`) with live-host + MAC vendor enumeration
+- **DNS Enumeration** — `dig` A/AAAA/MX/NS/TXT lookups with optional zone transfer
 - **IoT Scanner** — ARP table + nmap IoT port probe (RTSP/554, MQTT/1883, CoAP/5683, Telnet/23, IPP/9100, UPnP/49152) + mDNS/Bonjour discovery via `zeroconf`
-- **Report Generator** — export assessment reports
+
+*Vulnerability & Web*
+- **Vulnerability Scanner** — `nmap --script vuln` with real CVSS scores from NVD API v2
+- **Web Scanner** — `nikto` or header analysis fallback
+- **HTTP Header Analyzer** — grades a target's HTTP security headers (A–F) with per-header findings
+- **TLS / Certificate Inspector** — certificate chain, issuer, SAN, negotiated protocol/cipher, expiry countdown and weak-protocol warnings (pure stdlib `ssl`)
+- **CVE Search** — query the NVD catalog by CVE id or keyword
+
+*Offensive*
+- **Packet Capture** — Scapy-based protocol decode (HTTP, DNS, MQTT, SSH, SMTP, MySQL, etc.)
+- **Brute Force** — `hydra` authentication testing
+- **Exploit Framework** — search and deploy Metasploit modules via RPC
+
+*Intel & Utilities*
+- **IP Intelligence** — forward/reverse resolution + GeoIP (country, city, ISP, ASN)
+- **WHOIS Lookup** — registration/ownership records for domains and IPs
+- **Hash Toolkit** — hash-type identification + offline dictionary cracking (MD5/SHA family)
+- **Encoder / Decoder** — Base64, URL, Hex and JWT decode, entirely in-browser
+
+*Reporting*
+- **Report Generator** — compile an assessment report from live engagement data
 
 **Metasploit Integration (optional)**
 - Connects to `msfrpcd` via pymetasploit3 — all features degrade gracefully when MSF is not running
@@ -124,6 +142,7 @@ mega-reaper-9000/
 │       ├── nvd.py                  # NVD REST API v2 CVSS scores (24hr cache)
 │       ├── packet_capture.py       # Scapy background sniffer, protocol decode
 │       ├── iot_scanner.py          # IoT discovery: ARP + port probe + mDNS/Bonjour
+│       ├── intel.py                # TLS inspector, HTTP header grading, WHOIS, IP intel, hash tools
 │       ├── msf.py                  # pymetasploit3 RPC client (graceful degradation)
 │       ├── payload_generator.py    # msfvenom wrapper, 10 templates
 │       └── command_executor.py     # Whitelisted command execution
@@ -236,10 +255,10 @@ ARP table may be empty on a freshly booted machine. Ping a few LAN hosts first t
 - **Backend:** Flask 3.x, Flask-SocketIO 5.x, Flask-Login, Flask-SQLAlchemy
 - **Database:** SQLite via SQLAlchemy
 - **Monitoring:** psutil, subprocess
-- **Network:** python-nmap, Scapy, zeroconf (mDNS)
+- **Network:** python-nmap, Scapy, zeroconf (mDNS), stdlib `ssl`/`socket`
 - **Threat Intel:** NVD REST API v2, ip-api.com
 - **Offensive:** pymetasploit3, msfvenom
-- **Design:** Dark retrofuturism, CRT scan-line aesthetic, HTML5 Canvas node graph
+- **Design:** Professional dark "slate" console UI — Inter + JetBrains Mono typography, a blue/teal accent system with calibrated severity colors, card-based layout and HTML5 Canvas node graph
 
 ## License
 

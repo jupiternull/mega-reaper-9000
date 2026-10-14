@@ -137,6 +137,41 @@ def lookup(cve_id: str) -> dict:
     return result
 
 
+def search(keyword: str, limit: int = 15) -> dict:
+    """Keyword search against the NVD catalog. Returns a list of matching CVEs."""
+    keyword = (keyword or '').strip()
+    if not keyword:
+        return {'error': 'No keyword specified', 'results': []}
+
+    # A CVE id looks like CVE-YYYY-NNNN — route straight to the single lookup.
+    if keyword.upper().startswith('CVE-'):
+        single = lookup(keyword)
+        return {'keyword': keyword, 'count': 0 if single.get('error') else 1,
+                'results': [] if single.get('error') else [single], 'error': single.get('error')}
+
+    _rate_wait()
+    try:
+        from urllib.parse import quote
+        url = f'{_NVD_BASE}?keywordSearch={quote(keyword)}&resultsPerPage={min(limit, 50)}'
+        req = urllib.request.Request(
+            url,
+            headers={'User-Agent': 'mega-reaper-9000', 'Accept': 'application/json'}
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        return {'keyword': keyword, 'results': [], 'error': f'HTTP {e.code}'}
+    except Exception as e:
+        return {'keyword': keyword, 'results': [], 'error': str(e)}
+
+    results = []
+    for item in data.get('vulnerabilities', [])[:limit]:
+        cve = item.get('cve', {})
+        results.append(_parse_response({'vulnerabilities': [item]}, cve.get('id', '')))
+
+    return {'keyword': keyword, 'count': data.get('totalResults', len(results)), 'results': results, 'error': None}
+
+
 def enrich_vulnerabilities(vulns: list) -> list:
     """
     Add NVD data to a list of vulnerability dicts (each must have a 'cve' key).

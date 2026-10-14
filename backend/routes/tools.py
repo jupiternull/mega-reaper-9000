@@ -14,7 +14,9 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from services.network_scanner import NetworkScanner
 from services.nvd import enrich_vulnerabilities
+from services import nvd
 from services.geoip import lookup as geoip_lookup
+from services import intel
 
 bp = Blueprint('tools', __name__, url_prefix='/api/tools')
 
@@ -278,3 +280,97 @@ def web_scan():
         results['raw_output'] = f'Error: {e}'
     
     return jsonify(results)
+
+
+# ── Extended recon & intel tooling ───────────────────────────────────
+
+@bp.route('/tls', methods=['POST'])
+@login_required
+def tls_inspect():
+    """Inspect the TLS certificate and negotiated cipher of a host."""
+    data = request.get_json() or {}
+    host = data.get('target', '')
+    port = int(data.get('port') or 443)
+    return jsonify(intel.tls_inspect(host, port))
+
+
+@bp.route('/http-headers', methods=['POST'])
+@login_required
+def http_headers():
+    """Fetch and grade a target's HTTP security headers."""
+    data = request.get_json() or {}
+    return jsonify(intel.http_headers(data.get('target', '')))
+
+
+@bp.route('/whois', methods=['POST'])
+@login_required
+def whois_lookup():
+    """Run a WHOIS lookup for a domain or IP."""
+    data = request.get_json() or {}
+    return jsonify(intel.whois_lookup(data.get('target', '')))
+
+
+@bp.route('/ipinfo', methods=['POST'])
+@login_required
+def ip_info():
+    """Resolve, reverse-resolve and geolocate a host."""
+    data = request.get_json() or {}
+    return jsonify(intel.ip_info(data.get('target', '')))
+
+
+@bp.route('/cve', methods=['POST'])
+@login_required
+def cve_search():
+    """Search the NVD catalog by CVE id or keyword."""
+    data = request.get_json() or {}
+    return jsonify(nvd.search(data.get('target', ''), limit=int(data.get('limit') or 15)))
+
+
+@bp.route('/hash', methods=['POST'])
+@login_required
+def hash_tool():
+    """Identify a hash and optionally run a dictionary attack."""
+    data = request.get_json() or {}
+    value = data.get('target', '')
+    if data.get('crack'):
+        return jsonify(intel.hash_crack(value, data.get('wordlist')))
+    return jsonify(intel.hash_identify(value))
+
+
+@bp.route('/pingsweep', methods=['POST'])
+@login_required
+def ping_sweep():
+    """Host discovery sweep across a subnet (nmap -sn)."""
+    data = request.get_json() or {}
+    target = data.get('target', '')
+    if not target:
+        return jsonify({'error': 'No subnet specified'}), 400
+    try:
+        result = subprocess.run(
+            ['nmap', '-sn', '-T4', target],
+            capture_output=True, text=True, timeout=120
+        )
+    except FileNotFoundError:
+        return jsonify({'error': 'nmap not found — install with: sudo apt install nmap'}), 500
+    except subprocess.TimeoutExpired:
+        return jsonify({'error': 'Ping sweep timed out'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    hosts = []
+    current_ip = None
+    for line in result.stdout.splitlines():
+        m = re.search(r'Nmap scan report for (.+)', line)
+        if m:
+            label = m.group(1).strip()
+            ipm = re.search(r'\(([\d.]+)\)', label)
+            current_ip = {'host': label, 'ip': ipm.group(1) if ipm else label, 'mac': None, 'vendor': None}
+            hosts.append(current_ip)
+        elif current_ip is not None and 'MAC Address' in line:
+            macm = re.search(r'MAC Address: (\S+)\s*\(([^)]*)\)', line)
+            if macm:
+                current_ip['mac'] = macm.group(1)
+                current_ip['vendor'] = macm.group(2)
+
+    return jsonify({'target': target, 'count': len(hosts), 'hosts': hosts,
+                    'raw_output': result.stdout[-2000:]})
